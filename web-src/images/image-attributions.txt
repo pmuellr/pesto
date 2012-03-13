@@ -1,0 +1,40 @@
+--------------------------------------------------------------------------------
+pesto-XXXxYYY.png
+--------------------------------------------------------------------------------
+
+adapted from:
+
+    Fast Food, Lunch-Dinner, Spaghetti
+    
+    http://openclipart.org/detail/9088/fast-food-lunch-dinner-spaghetti-by-gerald_g
+
+licensed as:
+
+    Creative Commons CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+    http://creativecommons.org/publicdomain/zero/1.0/
+    
+--------------------------------------------------------------------------------
+lang-js-32x32.png
+--------------------------------------------------------------------------------
+
+adapted from: 
+
+    https://github.com/voodootikigod/logo.js
+    
+licensed as:
+
+    WTFPL version 2
+    https://github.com/voodootikigod/logo.js/blob/master/LICENSE
+    
+--------------------------------------------------------------------------------
+lang-js-32x32.png
+--------------------------------------------------------------------------------
+
+adapted from: 
+
+    https://github.com/jashkenas/coffee-script/blob/master/documentation/images/logo.png
+    
+licensed as:
+
+    MIT
+    http://github.com/jashkenas/coffee-script/raw/master/LICENSE
