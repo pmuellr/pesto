@@ -35,6 +35,7 @@ module.exports = def class NodeConnection extends events.EventEmitter
         # utils.logVerbose "NodeConnection(#{@port})"
         
         @socket = net.createConnection @port, "localhost"
+        @seq = 0
         
         @socket.setEncoding('utf8')
         
@@ -60,7 +61,17 @@ module.exports = def class NodeConnection extends events.EventEmitter
         for key, val of message.headers
             utils.logVerbose "       #{key}: #{val}"
         
-        utils.logVerbose "   data: #{message.body}"
+        if message.body != ''
+            body = JSON.parse(message.body)
+        
+            utils.logVerbose "   data: #{JSON.stringify(body,null,4)}"
+            
+        if message.body == ''
+            @sendRequest
+                command: 'scripts'
+                arguments:
+                    types: 7
+                    includeSource: false
     
     #---------------------------------------------------------------------------
     _onError: (error) ->
@@ -72,7 +83,21 @@ module.exports = def class NodeConnection extends events.EventEmitter
     _onEnd: ->
         utils.logVerbose "NodeConnection.onEnd"
         @emit 'end'
+
+    #---------------------------------------------------------------------------
+    sendRequest: (message) ->
+        message.seq = @seq++
+        message.type = 'request'
+        
+        message = JSON.stringify(message)
+        
+        crlf    = '\r\n'
+        message = "Content-Length: #{message.length}#{crlf}#{crlf}#{message}"
+
+        utils.logVerbose "sending message: #{message}"
+        
+        @socket.write message, 'utf8'
     
     #---------------------------------------------------------------------------
-    writeMessage: (message) ->
+    sendMessage: (message) ->
         utils.logVerbose "NodeConnection.write: #{message}"
