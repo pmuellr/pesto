@@ -1,1 +1,35 @@
-hello, world
+<!doctype html>
+
+<html>
+<head>
+<title>node-pesto</title>
+<link rel="shortcut icon" href="images/pesto-032x032.png"/>
+</head>
+
+<body>
+<p>trying some socket.io stuff
+
+<p><img src="images/lang-js-32x32.png">
+<p><img src="images/lang-coffee-script-32x32.png">
+<p><img src="images/pesto-032x032.png"></body>
+
+<script src="scripts/socket.io.js"></script>
+<script>
+var socket = io.connect(location.origin)
+
+socket.on('event', function (data) {
+    console.log("socket.io event: '" + data + "'")
+    socket.emit('request', data)
+})
+
+socket.on('response', function (data) {
+    console.log("socket.io response: '" + data + "'")
+    socket.emit('request', data)
+})
+
+console.log("socket.io request")
+socket.emit('request', 'some data')
+</script>
+
+</html>
+

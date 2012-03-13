@@ -18,10 +18,16 @@
 
 build:
 	@echo copying web files
+	
 	@chmod -R +w web
 	@rm -rf web
+	
 	@mkdir web
 	@cp -R web-src/* web
+	
+	@mkdir web/scripts
+	@cp node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.js web/scripts
+	
 	@chmod -R -w web
 
 test: build

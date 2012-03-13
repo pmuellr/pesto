@@ -17,7 +17,8 @@
 http = require 'http'
 path = require 'path'
 
-connect = require 'connect'
+connect   = require 'connect'
+socket_io = require 'socket.io'
 
 utils = require './utils'
 
@@ -36,11 +37,27 @@ module.exports = def class WebServer
         
         app = connect()
           .use(connect.favicon(path.join(webPath, 'images','icon-032x032.png')))
-          .use(connect.logger('dev'))
+        #  .use(connect.logger('dev'))
           .use(connect.static(webPath))
-          .use( (req, res) -> res.end 'Hello from Connect!\n')
 
         port = @config.port
-        http.createServer(app).listen(port)
+        server = http.createServer(app)
+        server.listen(port)
+
+        io = socket_io.listen(server)
+        io.sockets.on 'connection', (socket) => @_onWsConnect(socket)
+        
         utils.log "starting server on http://localhost:#{port}"
     
+    #---------------------------------------------------------------------------
+    _onWsConnect: (socket) ->
+        utils.logVerbose "WebServer._onWsConnect: connection received on socket"
+    
+        socket.on 'request', (data) => @_onWsRequest(socket, data)
+        
+    #---------------------------------------------------------------------------
+    _onWsRequest: (socket, data) ->
+        utils.logVerbose "WebServer._onWsRequest: '#{data}'"
+        
+        socket.emit 'response', data
+        

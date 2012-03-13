@@ -75,7 +75,9 @@ module.exports = def class NodeConnection extends events.EventEmitter
     
     #---------------------------------------------------------------------------
     _onError: (error) ->
-        utils.logVerbose "NodeConnection.onError: #{error}"
+        if error.code != 'ECONNREFUSED'
+            utils.logVerbose "NodeConnection.onError: #{error}"
+            
         @socket.end()
         @socket.destroy()
     
