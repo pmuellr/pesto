@@ -17,7 +17,8 @@
 net    = require 'net'
 events = require 'events'
 
-utils  = require './utils'
+utils          = require './utils'
+MessageReader  = require './MessageReader'
 
 def = require('./prettyStackTrace').def
 
@@ -35,11 +36,15 @@ module.exports = def class NodeConnection extends events.EventEmitter
         
         @socket = net.createConnection @port, "localhost"
         
+        @socket.setEncoding('utf8')
+        
         @connected = false
         @socket.on 'connect', (socket)  => @_onConnect(socket)
-        @socket.on 'data',    (data)    => @_onData(data)
         @socket.on 'error',   (error)   => @_onError(error)
         @socket.on 'end',               => @_onEnd()
+        
+        messageReader = new MessageReader(@socket)
+        messageReader.on 'message', (message) => @_onMessage(message)
         
     #---------------------------------------------------------------------------
     _onConnect: () ->
@@ -49,8 +54,13 @@ module.exports = def class NodeConnection extends events.EventEmitter
         @emit 'connect'
     
     #---------------------------------------------------------------------------
-    _onData: (data) ->
-        utils.logVerbose "NodeConnection.onData: #{data}"
+    _onMessage: (message) ->
+        utils.logVerbose "NodeConnection.onData:"
+        utils.logVerbose "   headers:"
+        for key, val of message.headers
+            utils.logVerbose "       #{key}: #{val}"
+        
+        utils.logVerbose "   data: #{message.body}"
     
     #---------------------------------------------------------------------------
     _onError: (error) ->
@@ -64,5 +74,5 @@ module.exports = def class NodeConnection extends events.EventEmitter
         @emit 'end'
     
     #---------------------------------------------------------------------------
-    write: (string) ->
-        utils.logVerbose "NodeConnection.write: #{string}"
+    writeMessage: (message) ->
+        utils.logVerbose "NodeConnection.write: #{message}"

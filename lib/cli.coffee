@@ -40,16 +40,12 @@ def class NodePest
         @checkConfig(utils.config)
         @dumpInfoAtStart(utils.config)
         
-        webServer = new WebServer(utils.config)
-        webServer.start()
-        
         nodeManager = new NodeManager(utils.config.v8port, utils.config.v8port)
         nodeManager.start()
-
-    #---------------------------------------------------------------------------
-    startV8Connector: ->
-        utils.logVerbose "starting v8 connector"
         
+        webServer = new WebServer(utils.config)
+        webServer.start()
+
     #---------------------------------------------------------------------------
     dumpInfoAtStart: (config) ->
         utils.logVerbose "#{utils.PROGRAM}: #{utils.VERSION}"
