@@ -16,28 +16,5 @@
 
 _        = require './underscore'
 backbone = require './backbone'
-pesto    = require './pesto'
 
-socket = null
-
-#-------------------------------------------------------------------------------
-main = ->
-    socket = io.connect location.origin
-    
-    socket.on 'event', (data) ->
-        console.log "socket.io event: '#{data}'"
-        setTimeout sendRequest, 5000
-    
-    socket.on 'response', (data) ->
-        console.log "socket.io response: '#{data}'"
-        setTimeout sendRequest, 5000
-        
-    sendRequest()
-
-#-------------------------------------------------------------------------------
-sendRequest = ->
-    console.log "sending request"
-    socket.emit 'request', 'some data'
-
-#-------------------------------------------------------------------------------
-main()
+require './pesto'

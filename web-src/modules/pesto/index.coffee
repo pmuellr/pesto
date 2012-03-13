@@ -14,5 +14,39 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-NodeCommand = require './NodeCommand'
+NodeMessager = require './NodeMessager'
 
+socket   = null
+messager = null
+
+#-------------------------------------------------------------------------------
+main = ->
+    socket = io.connect location.origin
+    
+    messager = new NodeMessager(socket)
+    
+    messager.on 'event', (message) -> _onEvent(message)
+    
+    getScripts(=> @gotScripts())
+
+#-------------------------------------------------------------------------------
+getScripts = (callback) ->
+
+    message =
+        command: 'scripts'
+        arguments:
+            types: 7
+            includeSource: false
+
+    messager.sendMessage(message, callback)
+
+#-------------------------------------------------------------------------------
+gotScripts = (message) ->
+    console.log "scripts: #{JSON.stringify(message,null,4)}"
+
+#-------------------------------------------------------------------------------
+_onEvent = (message) ->
+    console.log "event received: #{JSON.stringify(message,null,4)}"
+
+#-------------------------------------------------------------------------------
+main()
