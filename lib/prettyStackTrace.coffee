@@ -16,8 +16,6 @@
 
 path = require 'path'
 
-utils = require './utils'
-
 #-------------------------------------------------------------------------------
 exports.def = (aClass) ->
     className = aClass.name
@@ -33,7 +31,7 @@ exports.def = (aClass) ->
     aClass
 
 #-------------------------------------------------------------------------------
-Error.xprepareStackTrace = (error, structuredStackTrace) ->
+Error.prepareStackTrace = (error, structuredStackTrace) ->
     result = []
     result.push "---------------------------------------------------------"
     result.push "error: #{error}"
@@ -64,8 +62,8 @@ Error.xprepareStackTrace = (error, structuredStackTrace) ->
         file = path.basename(file)
         line = "#{line}"
 
-        file = utils.alignRight(file, longestFile)
-        line = utils.alignLeft( line, longestLine)
+        file = alignRight(file, longestFile)
+        line = alignLeft( line, longestLine)
 
         funcName = func.displayName ||
                    func.name || 
@@ -83,3 +81,16 @@ Error.xprepareStackTrace = (error, structuredStackTrace) ->
         
     result.join '\n'
 
+#-------------------------------------------------------------------------------
+alignLeft = (string, length) ->
+    while string.length < length
+        string = "#{string} "
+        
+    string
+
+#-------------------------------------------------------------------------------
+alignRight = (string, length) ->
+    while string.length < length
+        string = " #{string}"
+
+    string

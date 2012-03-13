@@ -22,6 +22,7 @@
   "dependencies":
     {
       "backbone":          "=0.9.1",
+      "browserify":        "=1.10.4",
       "coffee-script":     "=1.2.0",
       "connect":           "=2.0.2",
       "modjewel":          "=1.2.1",

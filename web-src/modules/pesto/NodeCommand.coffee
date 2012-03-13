@@ -14,7 +14,6 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-web
-tmp
-node_modules
-vendor
+def = require('./prettyStackTrace').def
+
+module.exports = def class NodeCommand

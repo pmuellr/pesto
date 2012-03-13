@@ -14,7 +14,5 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-web
-tmp
-node_modules
-vendor
+NodeCommand = require './NodeCommand'
+
