@@ -18,19 +18,19 @@ path = require 'path'
 
 _ = require 'underscore'
 
-utils       = require './utils'
-NodeManager = require './NodeManager'
-WebServer   = require './WebServer'
+utils         = require './utils'
+TargetScanner = require './TargetScanner'
+WebServer     = require './WebServer'
 
 def = require('./prettyStackTrace').def
 
 #-------------------------------------------------------------------------------
 module.exports.run = ->
-    nodePest = new NodePest()
-    nodePest.run()
+    cli = new CLI()
+    cli.run()
 
 #-------------------------------------------------------------------------------
-def class NodePest
+def class CLI
 
     #---------------------------------------------------------------------------
     constructor: ->
@@ -40,14 +40,18 @@ def class NodePest
         @checkConfig(utils.config)
         @dumpInfoAtStart(utils.config)
         
-        nodeManager = new NodeManager(utils.config.v8port, utils.config.v8port)
-        nodeManager.start()
+        targetScannerConfig =
+            portStart: utils.config.v8port
+            portStop:  utils.config.v8port
+        targetScanner = new TargetScanner(targetScannerConfig)
+        targetScanner.startScanning()
         
-        webServer = new WebServer(utils.config)
+        webServer = new WebServer(utils.config.port)
         webServer.start()
 
     #---------------------------------------------------------------------------
     dumpInfoAtStart: (config) ->
+        utils.logVerbose "----------------------------------------------------"
         utils.logVerbose "#{utils.PROGRAM}: #{utils.VERSION}"
         
         utils.logVerbose "configuration:"
@@ -59,6 +63,8 @@ def class NodePest
         for own key,val of config
             key = utils.alignLeft(key, maxKeyLen)
             utils.logVerbose "   #{key}: #{val}"
+
+        utils.logVerbose "----------------------------------------------------"
             
     #---------------------------------------------------------------------------
     checkConfig: (config) ->

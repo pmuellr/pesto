@@ -14,7 +14,7 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-NodeMessager = require './NodeMessager'
+PestoMessager = require './PestoMessager'
 
 socket   = null
 messager = null
@@ -23,11 +23,25 @@ messager = null
 main = ->
     socket = io.connect location.origin
     
-    messager = new NodeMessager(socket)
+    messager = new PestoMessager(socket)
     
     messager.on 'event', (message) -> _onEvent(message)
     
-    getScripts(=> @gotScripts())
+    getServerInfo(=> @gotServerInfo())
+
+#-------------------------------------------------------------------------------
+getServerInfo = (callback) ->
+
+    message =
+        command: 'pesto-getInfo'
+
+    messager.sendMessage(message, callback)
+
+#-------------------------------------------------------------------------------
+gotServerInfo = (callback) ->
+
+    console.log "server info: #{JSON.stringify(message,null,4)}"
+
 
 #-------------------------------------------------------------------------------
 getScripts = (callback) ->
@@ -43,6 +57,8 @@ getScripts = (callback) ->
 #-------------------------------------------------------------------------------
 gotScripts = (message) ->
     console.log "scripts: #{JSON.stringify(message,null,4)}"
+    
+    $("#scripts").html(JSON.stringify(message,null,4))
 
 #-------------------------------------------------------------------------------
 _onEvent = (message) ->

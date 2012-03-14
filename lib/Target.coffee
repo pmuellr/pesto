@@ -25,17 +25,19 @@ def = require('./prettyStackTrace').def
 #-------------------------------------------------------------------------------
 # emits:
 #   'connect'
-#   'message', aString
 #   'end'
 #-------------------------------------------------------------------------------
-module.exports = def class NodeConnection extends events.EventEmitter
+module.exports = def class Target extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@port) ->
         # utils.logVerbose "NodeConnection(#{@port})"
+        @properties = {}
         
         @socket = net.createConnection @port, "localhost"
         @seq = 0
+        @seqIntrospect = null
+        @description = "???"
         
         @socket.setEncoding('utf8')
         
@@ -53,6 +55,8 @@ module.exports = def class NodeConnection extends events.EventEmitter
         
         @connected = true
         @emit 'connect'
+        
+        @introspect()
     
     #---------------------------------------------------------------------------
     _onMessage: (message) ->
@@ -60,19 +64,31 @@ module.exports = def class NodeConnection extends events.EventEmitter
         utils.logVerbose "   headers:"
         for key, val of message.headers
             utils.logVerbose "       #{key}: #{val}"
-        
-        if message.body != ''
-            body = JSON.parse(message.body)
-        
-            utils.logVerbose "   data: #{JSON.stringify(body,null,4)}"
-            
+
         if message.body == ''
-            @sendRequest
-                command: 'scripts'
-                arguments:
-                    types: 7
-                    includeSource: false
-    
+            for key, val of message.headers
+                @properties[key] = val
+            return
+        
+        message = JSON.parse(message.body)
+        
+        utils.logVerbose "   data: #{JSON.stringify(message,null,4)}"
+
+        if message.type == 'event'
+            connectionManager.handleTargetEvent @, message
+            return
+
+        if (message.type == 'response') && (message.request_seq == @seqIntrospect)
+            if message.success
+                @description = message.body.text
+            return
+            
+        if message.type == 'response'
+            connectionManager.handleTargetResponse @, message
+            return
+
+        utils.logError "unknown message received from V8: #{message.type}"
+            
     #---------------------------------------------------------------------------
     _onError: (error) ->
         if error.code != 'ECONNREFUSED'
@@ -88,8 +104,7 @@ module.exports = def class NodeConnection extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     sendRequest: (message) ->
-        message.seq = @seq++
-        message.type = 'request'
+        message.seq  = @seq++
         
         message = JSON.stringify(message)
         
@@ -100,6 +115,18 @@ module.exports = def class NodeConnection extends events.EventEmitter
         
         @socket.write message, 'utf8'
     
+        message.seq
+        
     #---------------------------------------------------------------------------
-    sendMessage: (message) ->
-        utils.logVerbose "NodeConnection.write: #{message}"
+    introspect: ->
+    
+        message = 
+            type:       'request'
+            command:    'evaluate'
+            arguments:
+                global:      true
+                expression:  "process.pid + ': ' + process.argv.join(' ')"
+        
+        @seqIntrospect = @sendRequest message
+        
+        

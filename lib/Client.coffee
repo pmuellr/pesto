@@ -14,49 +14,25 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-events = require 'events'
-
-_ = require 'underscore'
+utils = require './utils'
 
 def = require('./prettyStackTrace').def
 
 #-------------------------------------------------------------------------------
-module.exports = def class NodeMessager extends events.EventEmitter
+module.exports = def class Client
 
     #---------------------------------------------------------------------------
     constructor: (@socket) ->
-        @callbacks = {}
-        @seq       = 0
-        
-        @socket.on 'event', (messageString) ->
-            message = JSON.parse(messageString)
-            @emit 'event', message
+        socket.on 'request', (message) => @_onRequest(message)
 
-        @socket.on 'response', (messageString) ->
-            message = JSON.parse(messageString)
+    #---------------------------------------------------------------------------
+    sendEvent: (message) ->
+        socket.emit 'event', message
+        
+    #---------------------------------------------------------------------------
+    sendResponse: (message) ->
+        socket.emit 'response', message
     
     #---------------------------------------------------------------------------
-    sendMessage: (message, callback) ->
-        seq     = @seq++
-        message = _.clone(message)
-        
-        message.seq  = seq
-        message.type = 'request'
-        message = JSON.stringify(message)
-        
-        if callback
-            @callbacks[seq] = callback
-            
-        @socket.emit 'request', message
-
-    #---------------------------------------------------------------------------
-    _onResponse: (message) ->
-        seq = message.request_seq
-        callback = @callbacks[seq]
-        if !callback
-            console.log "no callback for response: #{JSON.stringify(message,null,4)}"
-            return
-            
-        callback.apply(null, message)
-
-        
+    _onRequest: (message) ->
+        connectionManager.handleClientRequest @, message

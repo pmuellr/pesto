@@ -20,7 +20,9 @@ path = require 'path'
 connect   = require 'connect'
 socket_io = require 'socket.io'
 
-utils = require './utils'
+utils             = require './utils'
+Client            = require './Client'
+connectionManager = require './connectionManager'
 
 def = require('./prettyStackTrace').def
 
@@ -28,7 +30,7 @@ def = require('./prettyStackTrace').def
 module.exports = def class WebServer
 
     #---------------------------------------------------------------------------
-    constructor: (@config) ->
+    constructor: (@port) ->
     
     #---------------------------------------------------------------------------
     start: ->
@@ -37,27 +39,23 @@ module.exports = def class WebServer
         
         app = connect()
           .use(connect.favicon(path.join(webPath, 'images','icon-032x032.png')))
-        #  .use(connect.logger('dev'))
+          .use(connect.logger('dev'))
           .use(connect.static(webPath))
 
-        port = @config.port
         server = http.createServer(app)
-        server.listen(port)
+        server.listen(@port)
 
         io = socket_io.listen(server)
-        io.sockets.on 'connection', (socket) => @_onWsConnect(socket)
+        io.sockets.on 'connection', (socket) => @_onConnect(socket)
         
-        utils.log "starting server on http://localhost:#{port}"
+        utils.log "starting server on http://localhost:#{@port}"
     
     #---------------------------------------------------------------------------
-    _onWsConnect: (socket) ->
-        utils.logVerbose "WebServer._onWsConnect: connection received on socket"
+    _onConnect: (socket) ->
+        utils.logVerbose "WebServer._onConnect"
     
-        socket.on 'request', (data) => @_onWsRequest(socket, data)
+        client = new Client(socket)
         
-    #---------------------------------------------------------------------------
-    _onWsRequest: (socket, data) ->
-        utils.logVerbose "WebServer._onWsRequest: '#{data}'"
+        connectionManager.clientAttached client
         
-        socket.emit 'response', data
-        
+        socket.on 'disconnect', -> connectionManager.clientDetached client

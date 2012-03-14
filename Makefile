@@ -48,6 +48,8 @@ build:
 	@cp node_modules/socket.io/node_modules/socket.io-client/dist/socket.io.js    web/scripts
 	
 	@chmod -R -w web
+	
+	@touch tmp/build-done.txt
 
 test: build
 #	@echo

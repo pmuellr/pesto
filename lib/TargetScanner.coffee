@@ -17,8 +17,11 @@
 net    = require 'net'
 events = require 'events'
 
-utils          = require './utils'
-NodeConnection = require './NodeConnection'
+_ = require 'underscore'
+
+utils             = require './utils'
+Target            = require './Target'
+connectionManager = require './connectionManager'
 
 def = require('./prettyStackTrace').def
 
@@ -26,49 +29,58 @@ def = require('./prettyStackTrace').def
 # emits:
 #    cb('connected', aNodeConnection)
 #-------------------------------------------------------------------------------
-module.exports = def class NodeManager extends events.EventEmitter
+module.exports = def class TargetScanner
 
     #---------------------------------------------------------------------------
-    constructor: (@portStart, @portStop) ->
-        utils.logVerbose "NodeManager(#{@portStart}, #{@portStop})"
-        if @portStart > @portStop
-            [@portStart, @portStop] = [@portStop, @portStart]
+    constructor: (@config) ->
+        @openPorts = {}
+
+    #---------------------------------------------------------------------------
+    startScanning: ()  ->
+        if @config.portStart > @config.portStop
+            utils.fatalError 'starting target scan port > stopping target scan port'
             
         if @portStart <= 0
-            utils.fatalError 'starting node scan port < 0'
+            utils.fatalError 'starting target scan port < 0'
 
         if @portStop >= 256*256
-            utils.fatalError "stopping node scan port > #{256*256}"
-            
-        @connections = {}
-    
-    #---------------------------------------------------------------------------
-    start: ->
+            utils.fatalError "stopping target scan port > #{256*256}"
+
         @stopped  = false
         @interval = setInterval (=> @checkPorts()), 1000
-        
+            
     #---------------------------------------------------------------------------
-    stop: ->
+    stopScanning: ->
         @stopped = true
         clearInterval(@interval)
         
     #---------------------------------------------------------------------------
     checkPorts: ->
         # utils.logVerbose "checking node ports #{@portStart}..#{@portStop}"
-        for port in [@portStart .. @portStop]
+        for port in [@config.portStart .. @config.portStop]
             @checkPort port            
 
     #---------------------------------------------------------------------------
     checkPort: (port) ->
-        return if @connections[port]
+        return if @openPorts[port]
+        
         # utils.logVerbose "checking node port #{port}"
         
-        connection = new NodeConnection(port)
+        target = new Target(port)
         
-        connection.on 'connect', => 
-            utils.logVerbose "NodeManager: connected on port #{port}"
-            @connections[port] = connection
+        target.on 'connect', => 
+            utils.logVerbose "TargetScanner: connected on port #{port}"
+            @openPorts[port] = target
             
-        connection.on 'end', => 
-            utils.logVerbose "NodeManager: disconnected from port #{port}"
-            delete @connections[port]
+            connectionManager.targetAttached target
+            
+            target.on 'end', => @_onTargetEnd(target, port)
+
+            
+    #---------------------------------------------------------------------------
+    _onTargetEnd: (target, port) ->
+        utils.logVerbose "TargetScanner: disconnected from port #{port}"
+        delete @openPorts[port]
+
+        connectionManager.targetDetached target
+
