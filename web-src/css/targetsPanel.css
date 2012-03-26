@@ -16,20 +16,3 @@
 #-------------------------------------------------------------------------------
 */
 
-/*----------------------------------------------------------------------------*/
-.toolbar-item.targets .toolbar-icon {
-    background-image: url(../pesto/images/target-032x064.png);
-}
-
-.toolbar-item.targets.toggled-on .toolbar-icon {
-    background-image: url(../pesto/images/target-032x064.png);
-}
-
-/*----------------------------------------------------------------------------*/
-.toolbar-small .toolbar-item.targets .toolbar-icon {
-    background-image: url(../pesto/images/target-024x048.png);
-}
-
-.toolbar-small .toolbar-item.targets.toggled-on .toolbar-icon {
-    background-image: url(../pesto/images/target-024x048.png);
-}

@@ -17,3 +17,11 @@
 */
 
 /*----------------------------------------------------------------------------*/
+.toolbar-item.targets .toolbar-icon {
+    background-image: url(../images/target-032x064.png);
+}
+
+/*----------------------------------------------------------------------------*/
+.toolbar-small .toolbar-item.targets .toolbar-icon {
+    background-image: url(../images/target-024x048.png);
+}

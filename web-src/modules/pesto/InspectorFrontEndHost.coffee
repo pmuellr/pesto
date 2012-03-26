@@ -77,9 +77,9 @@ module.exports = class InspectorFrontendHost
         console.log("InspectorFrontendHost.loaded()")
         Preferences.localizeUI = false
         
-        setTimeout (=>@_toggleConsole()),            1000
-        setTimeout (=>@_setScriptsPanelAsCurrent()), 1000
-        setTimeout (=>@_createTargetsPanel()),       1000
+        setTimeout (=>@_toggleConsole()),            0
+        setTimeout (=>@_setScriptsPanelAsCurrent()), 0
+        setTimeout (=>@_createTargetsPanel()),       0
 
     #---------------------------------------------------------------------------
     _createTargetsPanel: ->    
