@@ -18,22 +18,19 @@ events = require 'events'
 
 _ = require 'underscore'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class PestoMessager extends events.EventEmitter
+module.exports = class PestoMessager extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@socket) ->
         @callbacks = {}
         @seq       = 0
         
-        @socket.on 'event', (messageString) =>
-            message = JSON.parse(messageString)
+        @socket.on 'pesto-event', (message) =>
             @emit 'event', message
+            @emit "event-#{meaage.event}", message
 
-        @socket.on 'response', (messageString) =>
-            message = JSON.parse(messageString)
+        @socket.on 'pesto-response', (message) =>
             @_onResponse(message)
     
     #---------------------------------------------------------------------------
@@ -43,12 +40,11 @@ module.exports = def class PestoMessager extends events.EventEmitter
         
         message.seq  = seq
         message.type = 'request'
-        message = JSON.stringify(message)
         
         if callback
             @callbacks[seq] = callback
             
-        @socket.emit 'request', message
+        @socket.emit 'pesto-request', message
 
     #---------------------------------------------------------------------------
     _onResponse: (message) ->
@@ -58,6 +54,7 @@ module.exports = def class PestoMessager extends events.EventEmitter
             console.log "no callback for response: #{JSON.stringify(message,null,4)}"
             return
             
-        callback.apply(null, message)
-
+        delete @callbacks[seq]
         
+        callback.call(null, message)
+ 

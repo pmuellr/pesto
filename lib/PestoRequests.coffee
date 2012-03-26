@@ -14,7 +14,8 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-utils  = require './utils'
+utils             = null
+connectionManager = null
 
 def = require('./prettyStackTrace').def
 
@@ -40,7 +41,9 @@ module.exports = def class PestoRequests
     @pesto_getTargets: (client, reqMessage) ->
         targets = []
         for target in connectionManager.getAttachedTargets()
-            targets.push [target.id, target.description]
+            targets.push 
+                id:          target.id 
+                description: target.description
             
         resMessage =
             type:        'response'
@@ -53,7 +56,6 @@ module.exports = def class PestoRequests
     
     #---------------------------------------------------------------------------
     @pesto_connectTarget: (client, reqMessage, targetId) ->
-    
         target = getAgentById(targetId)
     
         resMessage =
@@ -67,4 +69,11 @@ module.exports = def class PestoRequests
     
         if target
             connectionManager.connect(client,target)
+
+#-------------------------------------------------------------------------------
+# moved to the bottom to avoid issues w/recursive require()s
+#-------------------------------------------------------------------------------
+utils             = require './utils'
+connectionManager = require './connectionManager'
+
     

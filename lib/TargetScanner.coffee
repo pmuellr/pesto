@@ -56,7 +56,7 @@ module.exports = def class TargetScanner
         
     #---------------------------------------------------------------------------
     checkPorts: ->
-        # utils.logVerbose "checking node ports #{@portStart}..#{@portStop}"
+        # utils.logTrace arguments.callee, "checking node ports #{@portStart}..#{@portStop}"
         for port in [@config.portStart .. @config.portStop]
             @checkPort port            
 
@@ -64,22 +64,19 @@ module.exports = def class TargetScanner
     checkPort: (port) ->
         return if @openPorts[port]
         
-        # utils.logVerbose "checking node port #{port}"
+        # utils.logTrace arguments.callee, "checking node port #{port}"
         
         target = new Target(port)
         
         target.on 'connect', => 
-            utils.logVerbose "TargetScanner: connected on port #{port}"
+            utils.logVerbose "TargetScanner.checkPort(): connected on port #{port}"
             @openPorts[port] = target
-            
-            connectionManager.targetAttached target
             
             target.on 'end', => @_onTargetEnd(target, port)
 
             
     #---------------------------------------------------------------------------
     _onTargetEnd: (target, port) ->
-        utils.logVerbose "TargetScanner: disconnected from port #{port}"
         delete @openPorts[port]
 
         connectionManager.targetDetached target

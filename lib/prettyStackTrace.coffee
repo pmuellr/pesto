@@ -41,11 +41,15 @@ Error.prepareStackTrace = (error, structuredStackTrace) ->
     longestFile = 0
     longestLine = 0
     
+    cwd = path.resolve(process.cwd())
+    fileMax = 30
+    
     for callSite in structuredStackTrace
         file = callSite.getFileName()
         line = callSite.getLineNumber()
-
-        file = path.basename(file)
+        
+#       file = path.basename(file)
+        file = path.relative(cwd, file)
         line = "#{line}"
         
         if file.length > longestFile
@@ -54,12 +58,21 @@ Error.prepareStackTrace = (error, structuredStackTrace) ->
         if line.length > longestLine
             longestLine = line.length
     
+    longestFile = fileMax if longestFile > fileMax
+    
     for callSite in structuredStackTrace
         func = callSite.getFunction()
         file = callSite.getFileName()
         line = callSite.getLineNumber()
 
-        file = path.basename(file)
+#       file = path.basename(file)
+        file = path.relative(cwd, file)
+        
+        if file.length > longestFile
+            file = file.substr(-(fileMax - 3))
+            file = alignRight(file, fileMax-3)
+            file = "...#{file}"
+        
         line = "#{line}"
 
         file = alignRight(file, longestFile)

@@ -14,30 +14,39 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-
-utils             = require './utils'
-connectionManager = require './connectionManager'
-
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class Client
+module.exports = class SplitPane
 
     #---------------------------------------------------------------------------
-    constructor: (@socket) ->
-        @socket.on 'pesto-request', (message) => @_onRequest(message)
-
-    #---------------------------------------------------------------------------
-    sendEvent: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
-        @socket.emit 'pesto-event', message
+    constructor: (sizes, @resizePeer) ->
+        @sizes = normalizeSizes sizes
         
-    #---------------------------------------------------------------------------
-    sendResponse: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
-        @socket.emit 'pesto-response', message
+        @container = $ """
+            <div class="splitpane">
+            </div>
+        """
+        
+        first = true
+        for size in sizes
+            if !first 
+                slider = makeGrabber()
+                @container.
+            
+
+#---------------------------------------------------------------------------
+normalizeSizes: (sizes) ->
+    total = 0
+    for size in sizes
+        total += size
+        
+    newSizes = []
+    for size in sizes
+        newSizes.push Math.round(size * 100 / total)
+        
+    total = 0
+    for size in newSizes
+        total += size
+        
+    newSizes[newSizes.length-1] += (100-total)
     
-    #---------------------------------------------------------------------------
-    _onRequest: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
-        connectionManager.handleClientRequest @, message
+    newSizes

@@ -14,14 +14,17 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
---stdoutcolor blue
---stderrcolor red
+#-------------------------------------------------------------------------------
+module.exports = class TargetsPanel extends  WebInspector.Panel
 
-make test
-
-lib
-web-src
-tools
-
-package.json
-Makefile
+    #---------------------------------------------------------------------------
+    constructor: ->
+        WebInspector.Panel.call this, "targets"
+        
+        @_toolbarItemLabel = "Targets"
+        
+        Object.defineProperty this, "toolbarItemLabel", 
+            get: ()      => @_toolbarItemLabel  
+            set: (value) => @_toolbarItemLabel = value
+                               
+        @registerRequiredCSS "../pesto/css/targetsPanel.css"

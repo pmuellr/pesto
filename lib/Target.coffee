@@ -17,8 +17,9 @@
 net    = require 'net'
 events = require 'events'
 
-utils          = require './utils'
-MessageReader  = require './MessageReader'
+utils             = require './utils'
+MessageReader     = require './MessageReader'
+connectionManager = require './connectionManager'
 
 def = require('./prettyStackTrace').def
 
@@ -31,13 +32,14 @@ module.exports = def class Target extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@port) ->
-        # utils.logVerbose "NodeConnection(#{@port})"
+        # utils.logTrace arguments.callee, @port
         @properties = {}
         
         @socket = net.createConnection @port, "localhost"
-        @seq = 0
-        @seqIntrospect = null
-        @description = "???"
+        @seq = 1
+        @description = null
+        @responseCBs = {}
+        @headers = {}
         
         @socket.setEncoding('utf8')
         
@@ -51,40 +53,36 @@ module.exports = def class Target extends events.EventEmitter
         
     #---------------------------------------------------------------------------
     _onConnect: () ->
-        utils.logVerbose "NodeConnection.onConnect"
-        
         @connected = true
         @emit 'connect'
         
-        @introspect()
+        setTimeout (=> @introspect()), 1000
     
     #---------------------------------------------------------------------------
     _onMessage: (message) ->
-        utils.logVerbose "NodeConnection.onData:"
-        utils.logVerbose "   headers:"
-        for key, val of message.headers
-            utils.logVerbose "       #{key}: #{val}"
 
+        # first message from the target
         if message.body == ''
             for key, val of message.headers
-                @properties[key] = val
+                if key != 'Content-Length'
+                    @properties[key] = val
             return
         
         message = JSON.parse(message.body)
-        
-        utils.logVerbose "   data: #{JSON.stringify(message,null,4)}"
 
+        utils.logTrace arguments.callee, utils.Jl(message)
+        
         if message.type == 'event'
             connectionManager.handleTargetEvent @, message
             return
 
-        if (message.type == 'response') && (message.request_seq == @seqIntrospect)
-            if message.success
-                @description = message.body.text
-            return
-            
         if message.type == 'response'
-            connectionManager.handleTargetResponse @, message
+            if @responseCBs[message.request_seq]
+                @responseCBs[message.request_seq].call null, message
+                delete @responseCBs[message.request_seq]
+            else
+                connectionManager.handleTargetResponse @, message
+                
             return
 
         utils.logError "unknown message received from V8: #{message.type}"
@@ -92,34 +90,36 @@ module.exports = def class Target extends events.EventEmitter
     #---------------------------------------------------------------------------
     _onError: (error) ->
         if error.code != 'ECONNREFUSED'
-            utils.logVerbose "NodeConnection.onError: #{error}"
+            utils.logTrace arguments.callee, error
             
         @socket.end()
         @socket.destroy()
     
     #---------------------------------------------------------------------------
     _onEnd: ->
-        utils.logVerbose "NodeConnection.onEnd"
         @emit 'end'
 
     #---------------------------------------------------------------------------
-    sendRequest: (message) ->
+    sendRequest: (message, callback) ->
         message.seq  = @seq++
         
-        message = JSON.stringify(message)
+        messageString = JSON.stringify(message)
         
-        crlf    = '\r\n'
-        message = "Content-Length: #{message.length}#{crlf}#{crlf}#{message}"
+        crlf          = '\r\n'
+        messageString = "Content-Length: #{messageString.length}#{crlf}#{crlf}#{messageString}"
 
-        utils.logVerbose "sending message: #{message}"
+        #utils.logTrace arguments.callee, "sending message: #{messageString}"
+        utils.logTrace arguments.callee, utils.Jl(message)
         
-        @socket.write message, 'utf8'
+        @socket.write messageString, 'utf8'
     
+        if callback
+            @responseCBs[message.seq] = callback
+            
         message.seq
         
     #---------------------------------------------------------------------------
     introspect: ->
-    
         message = 
             type:       'request'
             command:    'evaluate'
@@ -127,6 +127,11 @@ module.exports = def class Target extends events.EventEmitter
                 global:      true
                 expression:  "process.pid + ': ' + process.argv.join(' ')"
         
-        @seqIntrospect = @sendRequest message
+        @sendRequest message, (message) =>
+            if message.success
+                @description = message.body.text
+                
+            connectionManager.targetAttached @
+        
         
         

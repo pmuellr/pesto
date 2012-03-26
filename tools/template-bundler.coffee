@@ -14,14 +14,17 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
---stdoutcolor blue
---stderrcolor red
+fs   = require 'fs'
+path = require 'path'
 
-make test
+dir = process.argv[2]
+files = fs.readdirSync(dir)
 
-lib
-web-src
-tools
+console.log 'templates = module.exports'
+console.log ''
 
-package.json
-Makefile
+for file in files
+    contents = fs.readFileSync path.join(dir,file), 'utf8'
+    contents = JSON.stringify(contents)
+    
+    console.log "templates['#{file}'] = #{contents}"

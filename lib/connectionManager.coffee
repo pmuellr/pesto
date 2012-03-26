@@ -16,8 +16,11 @@
 
 events = require 'events'
 
-utils         = require './utils'
-PestoRequests = require './PestoRequests'
+_ = require 'underscore'
+
+utils         = null
+PestoEvents   = null
+PestoRequests = null
 
 def = require('./prettyStackTrace').def
 
@@ -35,16 +38,19 @@ def class ConnectionManager
 
     #---------------------------------------------------------------------------
     handleClientRequest: (client, message) ->
+        # utils.logTrace arguments.callee, "message: #{utils.Jl(message)}"
+        
         if message.command.match /^pesto-/
             @handlePestoClientRequest client, message
             return
+            
         target = @getConnectedTarget client
         return if !target
         
         oldSeq = message.seq
         newSeq = target.sendRequest message
         
-        seqMap[newSeq] = [client, oldSeq]
+        @seqMap[newSeq] = [client, oldSeq]
 
     #---------------------------------------------------------------------------
     handlePestoClientRequest: (client, message) ->
@@ -65,16 +71,17 @@ def class ConnectionManager
 
     #---------------------------------------------------------------------------
     handleTargetResponse: (target, message) ->
-        [client, oldSeq] = seqMap[message.request_seq]
+        [client, oldSeq] = @seqMap[message.request_seq]
         return if !client
         
-        delete seqMap[message.request_seq]
+        delete @seqMap[message.request_seq]
         
         message.request_seq = oldSeq
         client.sendResponse message
     
     #---------------------------------------------------------------------------
     handleTargetEvent: (target, message) ->
+        # utils.logTrace arguments.callee, "message: #{utils.Jl(message)}"
     
         clients = @getConnectedClients(target)
         
@@ -138,7 +145,7 @@ def class ConnectionManager
 
     #---------------------------------------------------------------------------
     targetDetached: (target) ->
-        clients = getConnectedClients(target)
+        clients = @getConnectedClients(target)
         
         for client in clients
             @disconnect(client, target)
@@ -179,5 +186,18 @@ def class ConnectionManager
     getAgentById: (id) ->
         @agentMap[id]
 
+    #---------------------------------------------------------------------------
+    toString: ->
+        "#{@constructor.name}{}"
+
+
 #-------------------------------------------------------------------------------
 module.exports = new ConnectionManager
+
+#-------------------------------------------------------------------------------
+# moved to the bottom to avoid recursive requires
+#-------------------------------------------------------------------------------
+utils         = require './utils'
+PestoEvents   = require './PestoEvents'
+PestoRequests = require './PestoRequests'
+

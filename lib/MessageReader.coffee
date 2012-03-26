@@ -49,9 +49,9 @@ module.exports = def class MessageReader extends events.EventEmitter
     _onData: (data) ->
         @buffer += data
         
-        utils.logVerbose "MessageReader._onData: starting with '#{data}'"
+        # utils.logTrace arguments.callee, "starting with '#{data}'"
         while true
-            # utils.logVerbose "MessageReader._onData: top of loop"
+            # utils.logTrace arguments.callee, "top of loop"
 
             # reading the body
             if !@inHeaders

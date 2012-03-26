@@ -14,55 +14,80 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-PestoMessager = require './PestoMessager'
+PestoMessager         = require './PestoMessager'
+Widget                = require './Widget'
+templates             = require './templates'
+InspectorFrontendHost = require './InspectorFrontendHost'
 
 socket   = null
 messager = null
 
+widgetMap = {}
+
 #-------------------------------------------------------------------------------
 main = ->
-    socket = io.connect location.origin
+
+    installFunctionBind()
+    
+    options =
+        reconnect: false
+        
+    socket = io.connect location.origin, options
     
     messager = new PestoMessager(socket)
     
     messager.on 'event', (message) -> _onEvent(message)
     
-    getServerInfo(=> @gotServerInfo())
+    window.InspectorFrontendHost = new InspectorFrontendHost
+    
+
+#-------------------------------------------------------------------------------
+installFunctionBind = ->
+
+    # from:
+    # https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
+    
+    Function.prototype.bind = (oThis) ->
+        if typeof @ != "function"
+            # closest thing possible to the ECMAScript 5 internal IsCallable function
+            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable")
+        
+        aArgs   = Array.prototype.slice.call(arguments, 1)
+        fToBind = @
+        fNOP    = ->
+        
+        fBound = -> 
+            if (@ instanceof fNOP) 
+                receiver = @ 
+            else
+                receiver = (oThis || window)
+                
+            args     = aArgs.concat(Array.prototype.slice.call(arguments))
+            return fToBind.apply(receiver, args)
+        
+        fNOP.prototype   = @prototype;
+        fBound.prototype = new fNOP()
+        
+        return fBound
+
+#-------------------------------------------------------------------------------
+getTargets = (callback) ->
+    message =
+        command: 'pesto-getTargets'
+        
+    messager.sendMessage(message, callback)
 
 #-------------------------------------------------------------------------------
 getServerInfo = (callback) ->
-
     message =
         command: 'pesto-getInfo'
 
     messager.sendMessage(message, callback)
 
 #-------------------------------------------------------------------------------
-gotServerInfo = (callback) ->
-
-    console.log "server info: #{JSON.stringify(message,null,4)}"
-
-
-#-------------------------------------------------------------------------------
-getScripts = (callback) ->
-
-    message =
-        command: 'scripts'
-        arguments:
-            types: 7
-            includeSource: false
-
-    messager.sendMessage(message, callback)
-
-#-------------------------------------------------------------------------------
-gotScripts = (message) ->
-    console.log "scripts: #{JSON.stringify(message,null,4)}"
-    
-    $("#scripts").html(JSON.stringify(message,null,4))
-
-#-------------------------------------------------------------------------------
 _onEvent = (message) ->
     console.log "event received: #{JSON.stringify(message,null,4)}"
 
 #-------------------------------------------------------------------------------
-main()
+$(document).ready ->
+    main()

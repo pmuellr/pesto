@@ -1,3 +1,4 @@
+/*
 #-------------------------------------------------------------------------------
 # Copyright 2012 Patrick Mueller
 # 
@@ -13,15 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #-------------------------------------------------------------------------------
+*/
 
---stdoutcolor blue
---stderrcolor red
+/*----------------------------------------------------------------------------*/
+.toolbar-item.targets .toolbar-icon {
+    background-image: url(../pesto/images/target-032x064.png);
+}
 
-make test
+.toolbar-item.targets.toggled-on .toolbar-icon {
+    background-image: url(../pesto/images/target-032x064.png);
+}
 
-lib
-web-src
-tools
+/*----------------------------------------------------------------------------*/
+.toolbar-small .toolbar-item.targets .toolbar-icon {
+    background-image: url(../pesto/images/target-024x048.png);
+}
 
-package.json
-Makefile
+.toolbar-small .toolbar-item.targets.toggled-on .toolbar-icon {
+    background-image: url(../pesto/images/target-024x048.png);
+}

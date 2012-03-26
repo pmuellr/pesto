@@ -14,6 +14,21 @@ licensed as:
     http://creativecommons.org/publicdomain/zero/1.0/
     
 --------------------------------------------------------------------------------
+target-XXXxYYY.png
+--------------------------------------------------------------------------------
+
+adapted from:
+
+    Target
+    
+    http://openclipart.org/detail/33643/target-by-j_alves
+
+licensed as:
+
+    Creative Commons CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+    http://creativecommons.org/publicdomain/zero/1.0/
+    
+--------------------------------------------------------------------------------
 lang-js-32x32.png
 --------------------------------------------------------------------------------
 

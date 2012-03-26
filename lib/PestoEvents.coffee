@@ -47,7 +47,9 @@ module.exports = def class PestoEvents
             type:  'event'
             event: 'pesto-target-attached'
             body:
-                target: target.id
+                target: 
+                    id:          target.id
+                    description: target.description
                 
         client.sendEvent message
     
@@ -58,7 +60,8 @@ module.exports = def class PestoEvents
             type:  'event'
             event: 'pesto-target-detached'
             body:
-                target: target.id
+                target: 
+                    id: target.id
                 
         client.sendEvent message
     

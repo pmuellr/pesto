@@ -39,21 +39,20 @@ module.exports = def class WebServer
         
         app = connect()
           .use(connect.favicon(path.join(webPath, 'images','icon-032x032.png')))
-          .use(connect.logger('dev'))
+          #.use(connect.logger('dev'))
           .use(connect.static(webPath))
 
         server = http.createServer(app)
         server.listen(@port)
 
         io = socket_io.listen(server)
+        io.set('log level', 1)
         io.sockets.on 'connection', (socket) => @_onConnect(socket)
         
         utils.log "starting server on http://localhost:#{@port}"
     
     #---------------------------------------------------------------------------
     _onConnect: (socket) ->
-        utils.logVerbose "WebServer._onConnect"
-    
         client = new Client(socket)
         
         connectionManager.clientAttached client
