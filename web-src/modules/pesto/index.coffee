@@ -24,9 +24,10 @@ messager = null
 
 widgetMap = {}
 
+window.pesto = {}
+
 #-------------------------------------------------------------------------------
 main = ->
-
     installFunctionBind()
     
     options =
@@ -34,12 +35,11 @@ main = ->
         
     socket = io.connect location.origin, options
     
-    messager = new PestoMessager(socket)
+    pesto.messager = new PestoMessager(socket)
     
-    messager.on 'event', (message) -> _onEvent(message)
+    pesto.messager.on 'event', (message) -> _onEvent(message)
     
     window.InspectorFrontendHost = new InspectorFrontendHost
-    
 
 #-------------------------------------------------------------------------------
 installFunctionBind = ->

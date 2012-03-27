@@ -16,45 +16,44 @@
 
 events = require 'events'
 
-_ = require 'underscore'
-
 #-------------------------------------------------------------------------------
-module.exports = class PestoMessager extends events.EventEmitter
+# fires event 'selected' -> (target)
+#-------------------------------------------------------------------------------
+module.exports = class TargetsList extends events.EventEmitter
 
     #---------------------------------------------------------------------------
-    constructor: (@socket) ->
-        @callbacks = {}
-        @seq       = 0
+    constructor: () ->
+        @$element     = $ "<ul class='target-list'>"
+        @$noneItem    = $ "<li>none</li>"
         
-        @socket.on 'pesto-event', (message) =>
-            @emit 'event', message
-            @emit "event-#{message.event}", message
+        @$element.append @$noneItem
 
-        @socket.on 'pesto-response', (message) =>
-            @_onResponse(message)
+    #---------------------------------------------------------------------------
+    get$Element: -> @$element
+
+    #---------------------------------------------------------------------------
+    addTarget: (target) ->
+        desc = target.getDescription()
+        
+        target.$listItem = @$element.append "<li>#{desc}"
+
+        target.$listItem.data "target", target
+        
+        target.$listItem.click =>
+            @emit "selected", (target.$listItem.data("target"))
+        
+        @$noneItem.hide()
+        
+    #---------------------------------------------------------------------------
+    removeTarget: (target) ->
+
+        return if !target.$listItem
+        
+        target.$listItem.addClass "removing"
+        
+        target.$listItem.fadeOut 2000, =>
+            target.$listItem.remove()
+            
+            if 0 == @$list.children().size()
+                @$noneItem.show()
     
-    #---------------------------------------------------------------------------
-    sendMessage: (message, callback) ->
-        seq     = @seq++
-        message = _.clone(message)
-        
-        message.seq  = seq
-        message.type = 'request'
-        
-        if callback
-            @callbacks[seq] = callback
-            
-        @socket.emit 'pesto-request', message
-
-    #---------------------------------------------------------------------------
-    _onResponse: (message) ->
-        seq = message.request_seq
-        callback = @callbacks[seq]
-        if !callback
-            console.log "no callback for response: #{JSON.stringify(message,null,4)}"
-            return
-            
-        delete @callbacks[seq]
-        
-        callback.call(null, message)
- 

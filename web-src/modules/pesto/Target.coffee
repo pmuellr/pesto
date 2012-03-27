@@ -14,4 +14,12 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-require './pesto'
+events = require 'events'
+
+#-------------------------------------------------------------------------------
+module.exports = class Target extends events.EventEmitter
+
+    constructor: (message) ->
+        @id          = message.id
+        @description = message.description
+        @port        = message.port

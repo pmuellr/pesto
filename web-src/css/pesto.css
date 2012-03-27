@@ -25,3 +25,18 @@
 .toolbar-small .toolbar-item.targets .toolbar-icon {
     background-image: url(../images/target-024x048.png);
 }
+
+/*----------------------------------------------------------------------------*/
+.target-list li.dead {
+    color: red;
+}
+
+/*----------------------------------------------------------------------------*/
+.target-list li {
+    color: blue;
+}
+
+/*----------------------------------------------------------------------------*/
+.target-list li.connected {
+    color: green;
+}

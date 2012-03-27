@@ -14,6 +14,8 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
+TargetList = require './TargetList'
+
 #-------------------------------------------------------------------------------
 module.exports = class TargetsPanel extends  WebInspector.Panel
 
@@ -26,5 +28,21 @@ module.exports = class TargetsPanel extends  WebInspector.Panel
         Object.defineProperty this, "toolbarItemLabel", 
             get: ()      => @_toolbarItemLabel  
             set: (value) => @_toolbarItemLabel = value
-                               
-        @registerRequiredCSS "../pesto/css/targetsPanel.css"
+                          
+        
+        @targetList = new TargetList
+        
+        $(@element).append @targetList.get$Element()
+    
+        $(document).ready => _installHandlers()
+
+    #---------------------------------------------------------------------------
+    _installHandlers: ->
+        pesto.messager.on "event-pesto-target-attached", =>
+            
+
+        pesto.messager.on "event-pesto-target-detached", =>
+
+        pesto.messager.on "event-pesto-target-connected", =>
+
+        pesto.messager.on "event-pesto-target-disconnected", =>
