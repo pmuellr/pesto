@@ -25,8 +25,7 @@ build:
 	@rm -rf web
 	
 	@mkdir web
-	@mkdir web/client
-	@cp -R vendor/WebInspector/front-end/*    web/client
+	@cp -R vendor/WebInspector/front-end/*    web
 	@cp    vendor/WebInspector/Inspector.json web
 
 	@mkdir web/pesto
@@ -35,8 +34,8 @@ build:
 	@rm -rf          web/pesto/templates
 	@rm -rf          web/pestoimages/*.acorn
 	
-	@mv web/pesto/client/*   web/client
-	@mv web/pesto/index.html web
+	@mv     web/pesto/client/*   web
+	@rm -rf web/pesto/client
 	
 	@mkdir web/pesto/scripts
 

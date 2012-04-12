@@ -15,7 +15,6 @@
 #-------------------------------------------------------------------------------
 
 PestoMessager         = require './PestoMessager'
-Widget                = require './Widget'
 templates             = require './templates'
 InspectorFrontendHost = require './InspectorFrontendHost'
 
@@ -24,69 +23,47 @@ messager = null
 
 widgetMap = {}
 
-window.pesto = {}
+window.Pesto = {}
 
 #-------------------------------------------------------------------------------
 main = ->
-    installFunctionBind()
+    # installFunctionBind()
     
     options =
         reconnect: false
         
     socket = io.connect location.origin, options
     
-    pesto.messager = new PestoMessager(socket)
+    Pesto.messager = new PestoMessager(socket)
     
-    pesto.messager.on 'event', (message) -> _onEvent(message)
+    Pesto.messager.on 'event', (message) -> _onEvent(message)
     
     window.InspectorFrontendHost = new InspectorFrontendHost
-
-#-------------------------------------------------------------------------------
-installFunctionBind = ->
-
-    # from:
-    # https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Function/bind
     
-    Function.prototype.bind = (oThis) ->
-        if typeof @ != "function"
-            # closest thing possible to the ECMAScript 5 internal IsCallable function
-            throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable")
+    getTargets (message) ->
+        WebInspector.log "getTargets: #{JSON.stringify(message,null,4)}"
         
-        aArgs   = Array.prototype.slice.call(arguments, 1)
-        fToBind = @
-        fNOP    = ->
+    getServerInfo (message) ->
+        WebInspector.log "pesto server settings: #{JSON.stringify(message.body)}"
         
-        fBound = -> 
-            if (@ instanceof fNOP) 
-                receiver = @ 
-            else
-                receiver = (oThis || window)
-                
-            args     = aArgs.concat(Array.prototype.slice.call(arguments))
-            return fToBind.apply(receiver, args)
-        
-        fNOP.prototype   = @prototype;
-        fBound.prototype = new fNOP()
-        
-        return fBound
 
 #-------------------------------------------------------------------------------
 getTargets = (callback) ->
     message =
         command: 'pesto-getTargets'
         
-    messager.sendMessage(message, callback)
+    Pesto.messager.sendMessage(message, callback)
 
 #-------------------------------------------------------------------------------
 getServerInfo = (callback) ->
     message =
         command: 'pesto-getInfo'
 
-    messager.sendMessage(message, callback)
+    Pesto.messager.sendMessage(message, callback)
 
 #-------------------------------------------------------------------------------
 _onEvent = (message) ->
-    console.log "event received: #{JSON.stringify(message,null,4)}"
+    WebInspector.log "event received: #{JSON.stringify(message,null,4)}"
 
 #-------------------------------------------------------------------------------
 $(document).ready ->

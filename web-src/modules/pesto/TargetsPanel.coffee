@@ -34,15 +34,14 @@ module.exports = class TargetsPanel extends  WebInspector.Panel
         
         $(@element).append @targetList.get$Element()
     
-        $(document).ready => _installHandlers()
+        $(document).ready => @_installHandlers()
 
     #---------------------------------------------------------------------------
     _installHandlers: ->
-        pesto.messager.on "event-pesto-target-attached", =>
-            
+        Pesto.messager.on "event-pesto-target-attached", =>
 
-        pesto.messager.on "event-pesto-target-detached", =>
+        Pesto.messager.on "event-pesto-target-detached", =>
 
-        pesto.messager.on "event-pesto-target-connected", =>
+        Pesto.messager.on "event-pesto-target-connected", =>
 
-        pesto.messager.on "event-pesto-target-disconnected", =>
+        Pesto.messager.on "event-pesto-target-disconnected", =>

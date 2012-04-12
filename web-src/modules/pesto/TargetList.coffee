@@ -19,7 +19,7 @@ events = require 'events'
 #-------------------------------------------------------------------------------
 # fires event 'selected' -> (target)
 #-------------------------------------------------------------------------------
-module.exports = class TargetsList extends events.EventEmitter
+module.exports = class TargetList extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: () ->
@@ -27,6 +27,8 @@ module.exports = class TargetsList extends events.EventEmitter
         @$noneItem    = $ "<li>none</li>"
         
         @$element.append @$noneItem
+        
+        @addHandlers()
 
     #---------------------------------------------------------------------------
     get$Element: -> @$element
@@ -56,4 +58,17 @@ module.exports = class TargetsList extends events.EventEmitter
             
             if 0 == @$list.children().size()
                 @$noneItem.show()
+    
+    #---------------------------------------------------------------------------
+    addHandlers: ->
+    
+        Pesto.messager.on "event-pesto-target-attached", =>
+            @addTarget()
+
+        Pesto.messager.on "event-pesto-target-detached", =>
+            @removeTarget()
+
+        Pesto.messager.on "event-pesto-target-connected", =>
+
+        Pesto.messager.on "event-pesto-target-disconnected", =>
     

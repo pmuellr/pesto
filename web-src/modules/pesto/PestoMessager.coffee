@@ -51,7 +51,7 @@ module.exports = class PestoMessager extends events.EventEmitter
         seq = message.request_seq
         callback = @callbacks[seq]
         if !callback
-            console.log "no callback for response: #{JSON.stringify(message,null,4)}"
+            WebInspector.log "no callback for response: #{JSON.stringify(message,null,4)}"
             return
             
         delete @callbacks[seq]

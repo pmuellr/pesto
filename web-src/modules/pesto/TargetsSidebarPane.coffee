@@ -14,39 +14,31 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
+TargetList = require './TargetList'
+
 #-------------------------------------------------------------------------------
-module.exports = class SplitPane
+module.exports = class TargetsSidebarPane extends  WebInspector.SidebarPane
 
     #---------------------------------------------------------------------------
-    constructor: (sizes, @resizePeer) ->
-        @sizes = normalizeSizes sizes
+    constructor: ->
+        WebInspector.SidebarPane.call this, "Targets"
         
-        @container = $ """
-            <div class="splitpane">
-            </div>
-        """
+        @show()
         
-        first = true
-        for size in sizes
-            if !first 
-                slider = makeGrabber()
-                @container.
-            
+    #---------------------------------------------------------------------------
+    show: ->
+        @_visible = true
 
-#---------------------------------------------------------------------------
-normalizeSizes: (sizes) ->
-    total = 0
-    for size in sizes
-        total += size
+        return if @_wasShown
+
+        @_wasShown = true
         
-    newSizes = []
-    for size in sizes
-        newSizes.push Math.round(size * 100 / total)
-        
-    total = 0
-    for size in newSizes
-        total += size
-        
-    newSizes[newSizes.length-1] += (100-total)
-    
-    newSizes
+        @bodyElement.appendChild(Pesto.targetList.get$Element()[0])
+
+    #---------------------------------------------------------------------------
+    hide: ->
+        @_visible = false
+
+    #---------------------------------------------------------------------------
+    reset: ->
+        @refreshExpressions()
