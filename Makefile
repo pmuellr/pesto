@@ -32,19 +32,32 @@ build:
 	@cp -R web-src/* web/pesto
 	@rm -rf          web/pesto/modules
 	@rm -rf          web/pesto/templates
-	@rm -rf          web/pestoimages/*.acorn
+	@rm -rf          web/pesto/images/*.acorn
 	
-	@mv     web/pesto/client/*   web
+	@mv     web/pesto/client/*.js web
 	@rm -rf web/pesto/client
+	
+	@node_modules/.bin/coffee tools/create-index-html.coffee \
+	   vendor/WebInspector/front-end/inspector.html \
+	   web-src/client/index-additions.html \
+	   > web/index.html
 	
 	@mkdir web/pesto/scripts
 
 	@rm -rf tmp
 	@mkdir tmp
 
+    # pre-compile just to get syntax errors
+	@node_modules/.bin/coffee -c -o tmp \
+	    web-src/modules/*.coffee web-src/modules/pesto/*.coffee
+
+	@rm -rf tmp
+	@mkdir tmp
+
 	@cp -R web-src/modules/*        tmp
 	
-	@node_modules/.bin/coffee tools/template-bundler.coffee web-src/templates > tmp/pesto/templates.js
+	@node_modules/.bin/coffee tools/template-bundler.coffee \
+	    web-src/templates > tmp/pesto/templates.js
 	
 	@cp node_modules/backbone/backbone.js     tmp
 	@cp node_modules/underscore/underscore.js tmp
