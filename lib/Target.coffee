@@ -21,18 +21,16 @@ utils             = require './utils'
 MessageReader     = require './MessageReader'
 connectionManager = require './connectionManager'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
 # emits:
 #   'connect'
 #   'end'
 #-------------------------------------------------------------------------------
-module.exports = def class Target extends events.EventEmitter
+module.exports = class Target extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@port) ->
-        # utils.logTrace arguments.callee, @port
+        # utils.logTrace "Target.constructor", @port
         @properties = {}
         
         @socket = net.createConnection @port, "localhost"
@@ -70,7 +68,7 @@ module.exports = def class Target extends events.EventEmitter
         
         message = JSON.parse(message.body)
 
-        utils.logTrace arguments.callee, utils.Jl(message)
+        utils.logTrace "Target._onMessage", utils.Jl(message)
         
         if message.type == 'event'
             connectionManager.handleTargetEvent @, message
@@ -90,7 +88,7 @@ module.exports = def class Target extends events.EventEmitter
     #---------------------------------------------------------------------------
     _onError: (error) ->
         if error.code != 'ECONNREFUSED'
-            utils.logTrace arguments.callee, error
+            utils.logTrace "Target._onError", error
             
         @socket.end()
         @socket.destroy()
@@ -108,8 +106,8 @@ module.exports = def class Target extends events.EventEmitter
         crlf          = '\r\n'
         messageString = "Content-Length: #{messageString.length}#{crlf}#{crlf}#{messageString}"
 
-        #utils.logTrace arguments.callee, "sending message: #{messageString}"
-        utils.logTrace arguments.callee, utils.Jl(message)
+        #utils.logTrace "Target.sendRequest", "sending message: #{messageString}"
+        utils.logTrace "Target.sendRequest", utils.Jl(message)
         
         @socket.write messageString, 'utf8'
     

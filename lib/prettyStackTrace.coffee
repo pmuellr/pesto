@@ -17,20 +17,6 @@
 path = require 'path'
 
 #-------------------------------------------------------------------------------
-exports.def = (aClass) ->
-    className = aClass.name
-
-    for own key,val of aClass
-        if typeof val == 'function'
-            aClass[key].displayName = "#{className}:#{key}"
-    
-    for own key,val of aClass.prototype
-        if typeof val == 'function'
-            aClass.prototype[key].displayName = "#{className}.#{key}"
-            
-    aClass
-
-#-------------------------------------------------------------------------------
 Error.prepareStackTrace = (error, structuredStackTrace) ->
     result = []
     result.push "---------------------------------------------------------"

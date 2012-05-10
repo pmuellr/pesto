@@ -22,10 +22,8 @@ utils         = null
 PestoEvents   = null
 PestoRequests = null
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-def class ConnectionManager
+class ConnectionManager
 
     #---------------------------------------------------------------------------
     constructor: () ->
@@ -38,7 +36,7 @@ def class ConnectionManager
 
     #---------------------------------------------------------------------------
     handleClientRequest: (client, message) ->
-        # utils.logTrace arguments.callee, "message: #{utils.Jl(message)}"
+        # utils.logTrace "ConnectionManager.handleClientRequest", "message: #{utils.Jl(message)}"
         
         if message.command.match /^pesto-/
             @handlePestoClientRequest client, message
@@ -81,7 +79,7 @@ def class ConnectionManager
     
     #---------------------------------------------------------------------------
     handleTargetEvent: (target, message) ->
-        # utils.logTrace arguments.callee, "message: #{utils.Jl(message)}"
+        # utils.logTrace "ConnectionManager.handleTargetEvent", "message: #{utils.Jl(message)}"
     
         clients = @getConnectedClients(target)
         

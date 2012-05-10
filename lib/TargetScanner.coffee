@@ -23,13 +23,11 @@ utils             = require './utils'
 Target            = require './Target'
 connectionManager = require './connectionManager'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
 # emits:
 #    cb('connected', aNodeConnection)
 #-------------------------------------------------------------------------------
-module.exports = def class TargetScanner
+module.exports = class TargetScanner
 
     #---------------------------------------------------------------------------
     constructor: (@config) ->
@@ -56,7 +54,7 @@ module.exports = def class TargetScanner
         
     #---------------------------------------------------------------------------
     checkPorts: ->
-        # utils.logTrace arguments.callee, "checking node ports #{@portStart}..#{@portStop}"
+        # utils.logTrace "TargetScanner.checkPorts", "checking node ports #{@portStart}..#{@portStop}"
         for port in [@config.portStart .. @config.portStop]
             @checkPort port            
 
@@ -64,7 +62,7 @@ module.exports = def class TargetScanner
     checkPort: (port) ->
         return if @openPorts[port]
         
-        # utils.logTrace arguments.callee, "checking node port #{port}"
+        # utils.logTrace "TargetScanner.checkPort", "checking node port #{port}"
         
         target = new Target(port)
         

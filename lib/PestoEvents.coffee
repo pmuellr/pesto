@@ -16,33 +16,31 @@
 
 utils  = require './utils'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class PestoEvents
+module.exports = class PestoEvents
 
     #---------------------------------------------------------------------------
-    @sendEventConnected: (client, target) ->
+    @sendConnected: (client, target) ->
         message = 
             type:  'event'
             event: 'pesto-target-connected'
             body:
                 target: target.id
                 
-        client.sendEvent message
+        client.send message
     
     #---------------------------------------------------------------------------
-    @sendEventDisconnected: (client, target) ->
+    @sendDisconnected: (client, target) ->
         message = 
             type:  'event'
             event: 'pesto-target-disconnected'
             body:
                 target: target.id
                 
-        client.sendEvent message
+        client.send message
 
     #---------------------------------------------------------------------------
-    @sendEventTargetAttached: (client, target) ->
+    @sendTargetAttached: (client, target) ->
         message = 
             type:  'event'
             event: 'pesto-target-attached'
@@ -51,11 +49,11 @@ module.exports = def class PestoEvents
                     id:          target.id
                     description: target.description
                 
-        client.sendEvent message
+        client.send message
     
     
     #---------------------------------------------------------------------------
-    @sendEventTargetDetached: (client, target) ->
+    @sendTargetDetached: (client, target) ->
         message = 
             type:  'event'
             event: 'pesto-target-detached'
@@ -63,13 +61,13 @@ module.exports = def class PestoEvents
                 target: 
                     id: target.id
                 
-        client.sendEvent message
+        client.send message
     
     
     #---------------------------------------------------------------------------
-    @sendEventPestoConnected: (client, message) ->
+    @sendClientConnected: (client, message) ->
         message = 
             type:  'event'
-            event: 'pesto-connected'
+            event: 'pesto-client-connected'
                 
-        client.sendEvent message
+        client.send message

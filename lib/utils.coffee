@@ -21,8 +21,6 @@ path = require 'path'
 _    = require 'underscore'
 nopt = require 'nopt'
 
-def  = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
 
 configDefaults =
@@ -41,17 +39,18 @@ init = ->
     utils.PROGRAM = packageJSON.name
     utils.VERSION = packageJSON.version
 
-
     configFile    = getConfigFromFile()
     configCommand = getConfigFromCommandLine()
     
     utils.config = _.defaults(configCommand, configFile, configDefaults)
     
 #-------------------------------------------------------------------------------
-def class Utils
+class Utils
 
     #---------------------------------------------------------------------------
-    rootPath: path.resolve(path.join(__dirname, '..'))
+    constructor: ->
+        @config   = {}
+        @rootPath = path.resolve(path.join(__dirname, '..'))
 
     #---------------------------------------------------------------------------
     Jl: (object) ->
@@ -61,9 +60,6 @@ def class Utils
     Js: (object) ->
         JSON.stringify(object)
     
-    #---------------------------------------------------------------------------
-    config: {} # value set in init()
-
     #---------------------------------------------------------------------------
     trim: (string) -> 
         string.replace(/(^\s+)|(\s+$)/g,'')
@@ -84,7 +80,10 @@ def class Utils
 
     #---------------------------------------------------------------------------
     logTrace: (func, message) -> 
-        frame = func.displayName || func.name || "<anonymous function>"
+        if typeof func == "function"
+            frame = func.displayName || func.name || "<anonymous function>"
+        else
+            frame = "#{func}"
             
         @logVerbose "#{frame}: #{message}"
 

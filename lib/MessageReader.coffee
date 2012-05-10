@@ -19,13 +19,11 @@ events = require 'events'
 
 utils  = require './utils'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
 # emits: 
 #    'message', {headers, body}
 #-------------------------------------------------------------------------------
-module.exports = def class MessageReader extends events.EventEmitter
+module.exports = class MessageReader extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (socket) ->
@@ -49,9 +47,9 @@ module.exports = def class MessageReader extends events.EventEmitter
     _onData: (data) ->
         @buffer += data
         
-        # utils.logTrace arguments.callee, "starting with '#{data}'"
+        # utils.logTrace "MessageReader._onData", "starting with '#{data}'"
         while true
-            # utils.logTrace arguments.callee, "top of loop"
+            # utils.logTrace "MessageReader._onData", "top of loop"
 
             # reading the body
             if !@inHeaders

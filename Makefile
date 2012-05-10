@@ -21,49 +21,65 @@ SOCKET_IO_DIR = node_modules/socket.io/node_modules/socket.io-client/dist
 build:
 	@echo building web directory
 	
+	# erase the ./web directory
 	@chmod -R +w web
 	@rm -rf web
 	
+	# create the ./web directory
 	@mkdir web
+	
+	# copy in Web Inspector files
 	@cp -R vendor/WebInspector/front-end/*    web
 	@cp    vendor/WebInspector/Inspector.json web
 
+	# copy in pesto files
 	@mkdir web/pesto
 	@cp -R web-src/* web/pesto
+	
+	# modules / templates added later
 	@rm -rf          web/pesto/modules
 	@rm -rf          web/pesto/templates
 	@rm -rf          web/pesto/images/*.acorn
 	
+    # move custom Web Inspector files over	
 	@mv     web/pesto/client/*.js web
 	@rm -rf web/pesto/client
 	
+    # create a new index.html file
 	@node_modules/.bin/coffee tools/create-index-html.coffee \
 	   vendor/WebInspector/front-end/inspector.html \
 	   web-src/client/index-additions.html \
 	   > web/index.html
 	
+	# create place for new pesto scripts
 	@mkdir web/pesto/scripts
 
+    # pre-compile just to get syntax errors, browserify doesn't
 	@rm -rf tmp
 	@mkdir tmp
 
-    # pre-compile just to get syntax errors
 	@node_modules/.bin/coffee -c -o tmp \
-	    web-src/modules/*.coffee web-src/modules/pesto/*.coffee
+	    web-src/modules/*.coffee web-src/modules/*.coffee
 
+    # copy our pesto modules over for browserify
 	@rm -rf tmp
 	@mkdir tmp
+	@mkdir tmp/pesto
 
-	@cp -R web-src/modules/*        tmp
+	@cp -R web-src/modules/*        tmp/pesto
+	@echo "require('./pesto')" >      tmp/index.js
 	
+    # create our templates module
 	@node_modules/.bin/coffee tools/template-bundler.coffee \
 	    web-src/templates > tmp/pesto/templates.js
 	
+    # copy over 3rd party modules
 	@cp node_modules/backbone/backbone.js     tmp
 	@cp node_modules/underscore/underscore.js tmp
 	
+    # run browserify
 	@echo "   running browserify"
-	@node_modules/.bin/browserify tmp/index.coffee \
+	@node_modules/.bin/browserify tmp/index.js \
 	    --outfile web/pesto/scripts/modules.js \
 	    --debug --verbose
 	

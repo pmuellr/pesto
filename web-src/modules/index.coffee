@@ -14,4 +14,55 @@
 # limitations under the License.
 #-------------------------------------------------------------------------------
 
-require './pesto'
+PestoMessager         = require './PestoMessager'
+templates             = require './templates'
+InspectorFrontendHost = require './InspectorFrontendHost'
+connectionNotifier    = require './ConnectionNotifier'
+
+socket   = null
+messager = null
+
+widgetMap = {}
+
+window.Pesto = {}
+
+#-------------------------------------------------------------------------------
+main = ->
+    options =
+        reconnect: false
+        
+    socket = io.connect location.origin, options
+    
+    Pesto.messager = new PestoMessager(socket)
+    
+    Pesto.messager.on 'event', (message) -> _onEvent(message)
+    
+    window.InspectorFrontendHost = new InspectorFrontendHost
+    
+    getTargets (message) ->
+        WebInspector.log "getTargets: #{JSON.stringify(message,null,4)}"
+        
+    getServerInfo (message) ->
+        WebInspector.log "pesto server settings: #{JSON.stringify(message.body)}"
+        
+#-------------------------------------------------------------------------------
+getTargets = (callback) ->
+    message =
+        command: 'pesto-getTargets'
+        
+    Pesto.messager.sendMessage(message, callback)
+
+#-------------------------------------------------------------------------------
+getServerInfo = (callback) ->
+    message =
+        command: 'pesto-getInfo'
+
+    Pesto.messager.sendMessage(message, callback)
+
+#-------------------------------------------------------------------------------
+_onEvent = (message) ->
+    WebInspector.log "event received: #{JSON.stringify(message,null,4)}"
+
+#-------------------------------------------------------------------------------
+$(document).ready ->
+    main()

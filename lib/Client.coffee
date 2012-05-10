@@ -18,10 +18,8 @@
 utils             = require './utils'
 connectionManager = require './connectionManager'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class Client
+module.exports = class Client
 
     #---------------------------------------------------------------------------
     constructor: (@socket) ->
@@ -29,15 +27,15 @@ module.exports = def class Client
 
     #---------------------------------------------------------------------------
     sendEvent: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
+        utils.logTrace "Client.sendEvent", utils.Jl(message)
         @socket.emit 'pesto-event', message
         
     #---------------------------------------------------------------------------
     sendResponse: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
+        utils.logTrace "Client.sendResponse", utils.Jl(message)
         @socket.emit 'pesto-response', message
     
     #---------------------------------------------------------------------------
     _onRequest: (message) ->
-        utils.logTrace arguments.callee, utils.Jl(message)
+        utils.logTrace "Client._onRequest", utils.Jl(message)
         connectionManager.handleClientRequest @, message

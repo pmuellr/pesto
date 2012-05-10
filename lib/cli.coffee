@@ -22,15 +22,13 @@ utils         = require './utils'
 TargetScanner = require './TargetScanner'
 WebServer     = require './WebServer'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
 module.exports.run = ->
     cli = new CLI()
     cli.run()
 
 #-------------------------------------------------------------------------------
-def class CLI
+class CLI
 
     #---------------------------------------------------------------------------
     constructor: ->

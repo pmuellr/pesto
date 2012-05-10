@@ -17,6 +17,29 @@
 */
 
 /*----------------------------------------------------------------------------*/
+#pesto-connection-info {
+    float:            right;
+    display:          inline-block;
+    background-color: #AAA;
+    padding:          0.0em 1.0em;
+    border-radius:    10px;
+    border:           thin solid black;
+    margin:           3px;
+}
+
+#pesto-connection-info.connected {
+    background-color: #DFD;
+}
+
+#pesto-connection-info.disconnected {
+    background-color: #FDD;
+}
+
+#pesto-connection-info.waiting {
+    background-color: #DDF;
+}
+
+/*----------------------------------------------------------------------------*/
 .toolbar-item.targets .toolbar-icon {
     background-image: url(../images/target-032x064.png);
 }

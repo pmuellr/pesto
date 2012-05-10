@@ -24,10 +24,8 @@ utils             = require './utils'
 Client            = require './Client'
 connectionManager = require './connectionManager'
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class WebServer
+module.exports = class WebServer
 
     #---------------------------------------------------------------------------
     constructor: (@port) ->

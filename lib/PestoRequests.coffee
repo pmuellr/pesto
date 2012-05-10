@@ -17,10 +17,8 @@
 utils             = null
 connectionManager = null
 
-def = require('./prettyStackTrace').def
-
 #-------------------------------------------------------------------------------
-module.exports = def class PestoRequests
+module.exports = class PestoRequests
 
     #---------------------------------------------------------------------------
     @pesto_getInfo: (client, reqMessage) ->
@@ -55,7 +53,8 @@ module.exports = def class PestoRequests
         client.sendResponse resMessage
     
     #---------------------------------------------------------------------------
-    @pesto_connectTarget: (client, reqMessage, targetId) ->
+    @pesto_connectTarget: (client, reqMessage) ->
+        targetId = reqMessage.targetId
         target = getAgentById(targetId)
     
         resMessage =
