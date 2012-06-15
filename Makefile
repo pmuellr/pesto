@@ -1,18 +1,4 @@
-#-------------------------------------------------------------------------------
-# Copyright 2012 Patrick Mueller
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#    http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#-------------------------------------------------------------------------------
+# Licensed under the Tumbolia Public License. See footer for details.
 
 .PHONY: build test vendor
 
@@ -33,6 +19,7 @@ build:
 	@cp    vendor/WebInspector/Inspector.json web
 
 	# copy in pesto files
+	@node_modules/.bin/coffee tools/ij2html.coffee web/Inspector.json > web/Inspector-API.html
 	@mkdir web/pesto
 	@cp -R web-src/* web/pesto
 	
@@ -69,12 +56,10 @@ build:
 	@cp -R web-src/modules/*        tmp/pesto
 	@echo "require('./pesto')" >      tmp/index.js
 	
-    # create our templates module
-	@node_modules/.bin/coffee tools/template-bundler.coffee \
-	    web-src/templates > tmp/pesto/templates.js
-	
-    # copy over 3rd party modules
-	@cp node_modules/backbone/backbone.js     tmp
+#	@node_modules/.bin/coffee tools/template-bundler.coffee \
+#	    web-src/templates > tmp/pesto/templates.js
+#	
+#	@cp node_modules/backbone/backbone.js     tmp
 	@cp node_modules/underscore/underscore.js tmp
 	
     # run browserify
@@ -83,7 +68,7 @@ build:
 	    --outfile web/pesto/scripts/modules.js \
 	    --debug --verbose
 	
-	@cp    vendor/mustache.js            web/pesto/scripts
+#	@cp    vendor/mustache.js            web/pesto/scripts
 #	@cp    vendor/coffee-script.js       web/pesto/scripts
 	@cp    vendor/jquery.js              web/pesto/scripts
 #	@cp -R vendor/bootstrap              web/bootstrap
@@ -103,7 +88,7 @@ vendor:
 	@mkdir vendor
 	curl --output vendor/jquery.js        --progress-bar http://code.jquery.com/jquery-1.7.1.min.js
 #	curl --output vendor/coffee-script.js --progress-bar https://raw.github.com/jashkenas/coffee-script/1.2.0/extras/coffee-script.js
-	curl --output vendor/mustache.js      --progress-bar https://raw.github.com/janl/mustache.js/0.4.2/mustache.js
+#	curl --output vendor/mustache.js      --progress-bar https://raw.github.com/janl/mustache.js/0.4.2/mustache.js
 #	curl --output vendor/bootstrap.zip    --progress-bar http://twitter.github.com/bootstrap/assets/bootstrap.zip
 
 #	mkdir    vendor/bootstrap
@@ -118,3 +103,17 @@ vendor:
 	svn --non-interactive --trust-server-cert export -r 111354 https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/inspector vendor/WebInspector
 	rm vendor/WebInspector/*.cpp
 	rm vendor/WebInspector/*.h
+
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 Patrick Mueller
+# 
+# Tumbolia Public License
+# 
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and this
+# notice are preserved.
+# 
+# TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+# 
+#   0. opan saurce LOL
+#-------------------------------------------------------------------------------

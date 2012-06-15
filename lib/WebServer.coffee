@@ -1,18 +1,4 @@
-#-------------------------------------------------------------------------------
-# Copyright 2012 Patrick Mueller
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-#     http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#-------------------------------------------------------------------------------
+# Licensed under the Tumbolia Public License. See footer for details.
 
 http = require 'http'
 path = require 'path'
@@ -36,7 +22,7 @@ module.exports = class WebServer
         webPath  = path.join rootPath, 'web'
         
         app = connect()
-          .use(connect.favicon(path.join(webPath, 'images','icon-032x032.png')))
+          .use(connect.favicon(path.join(webPath, 'pesto', 'images','pesto-032x032.png')))
           #.use(connect.logger('dev'))
           .use(connect.static(webPath))
 
@@ -56,3 +42,17 @@ module.exports = class WebServer
         connectionManager.clientAttached client
         
         socket.on 'disconnect', -> connectionManager.clientDetached client
+
+#-------------------------------------------------------------------------------
+# Copyright (c) 2012 Patrick Mueller
+# 
+# Tumbolia Public License
+# 
+# Copying and distribution of this file, with or without modification, are
+# permitted in any medium without royalty provided the copyright notice and this
+# notice are preserved.
+# 
+# TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+# 
+#   0. opan saurce LOL
+#-------------------------------------------------------------------------------
