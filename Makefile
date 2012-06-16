@@ -4,22 +4,21 @@
 
 SOCKET_IO_DIR = node_modules/socket.io/node_modules/socket.io-client/dist
 
-build:
+#-------------------------------------------------------------------------------
+build: web tmp
 	@echo building web directory
 	
 	# erase the ./web directory
-	@chmod -R +w web
-	@rm -rf web
-	
-	# create the ./web directory
-	@mkdir web
+	@-chmod -R +w web
+	@-rm -rf web/*
 	
 	# copy in Web Inspector files
 	@cp -R vendor/WebInspector/front-end/*    web
 	@cp    vendor/WebInspector/Inspector.json web
 
 	# copy in pesto files
-	@node_modules/.bin/coffee tools/ij2html.coffee web/Inspector.json > web/Inspector-API.html
+	@node_modules/.bin/coffee tools/ij2html.coffee  web/Inspector.json > web/Inspector-API.html
+	@node_modules/.bin/coffee tools/ij2stubs.coffee web/Inspector.json > web/Inspector-stubs.coffee.txt
 	@mkdir web/pesto
 	@cp -R web-src/* web/pesto
 	
@@ -42,15 +41,12 @@ build:
 	@mkdir web/pesto/scripts
 
     # pre-compile just to get syntax errors, browserify doesn't
-	@rm -rf tmp
-	@mkdir tmp
-
+	@-rm -rf tmp/*
 	@node_modules/.bin/coffee -c -o tmp \
 	    web-src/modules/*.coffee web-src/modules/*.coffee
 
     # copy our pesto modules over for browserify
-	@rm -rf tmp
-	@mkdir tmp
+	@-rm -rf tmp/*
 	@mkdir tmp/pesto
 
 	@cp -R web-src/modules/*        tmp/pesto
@@ -79,9 +75,24 @@ build:
 	
 	@touch tmp/build-done.txt
 
+#-------------------------------------------------------------------------------
+web:
+	mkdir web
+    
+#-------------------------------------------------------------------------------
+tmp:
+	mkdir tmp
+    
+#-------------------------------------------------------------------------------
 test: build
 #	@echo
 
+#-------------------------------------------------------------------------------
+#WEBKIT_VERSION = 111354
+#WEBKIT_VERSION = 120350
+WEBKIT_VERSION = 120456
+
+#-------------------------------------------------------------------------------
 vendor:
 	@npm install
 	@rm -rf vendor
@@ -100,7 +111,7 @@ vendor:
 #	curl --output vendor/CodeMirror2/codemirror.js  --progress-bar https://raw.github.com/marijnh/CodeMirror2/master/lib/codemirror.js
 #	curl --output vendor/CodeMirror2/javascript.js  --progress-bar https://raw.github.com/marijnh/CodeMirror2/master/mode/javascript/javascript.js
 	
-	svn --non-interactive --trust-server-cert export -r 111354 https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/inspector vendor/WebInspector
+	svn --non-interactive --trust-server-cert export -r $(WEBKIT_VERSION) https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/inspector vendor/WebInspector
 	rm vendor/WebInspector/*.cpp
 	rm vendor/WebInspector/*.h
 

@@ -4,6 +4,8 @@ events = require 'events'
 
 _ = require 'underscore'
 
+utils = require './utils'
+
 #-------------------------------------------------------------------------------
 module.exports = class PestoMessager extends events.EventEmitter
 
@@ -18,6 +20,20 @@ module.exports = class PestoMessager extends events.EventEmitter
 
         @socket.on 'pesto-response', (message) =>
             @_onResponse(message)
+            
+        @socket.on 'connect',    => @connected()
+        @socket.on 'disconnect', => @disconnected()
+
+    #---------------------------------------------------------------------------
+    connected: ->
+        utils.log "connected to Pesto server socket"
+    
+    #---------------------------------------------------------------------------
+    disconnected: ->
+        utils.log "disconnected from Pesto server socket"
+        
+        message = "The server appears to have stopped.  You will need to reload this page."
+        utils.logError message
     
     #---------------------------------------------------------------------------
     sendMessage: (message, callback) ->

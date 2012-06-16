@@ -10,6 +10,7 @@ init = ->
     serviceHacks["Profiler.isSampling"]                = Profiler_isSampling
     serviceHacks["Profiler.hasHeapProfiler"]           = Profiler_hasHeapProfiler
     serviceHacks["Page.reload"]                        = Page_reload
+    serviceHacks["Page.canOverrideDeviceMetrics"]      = Page_canOverrideDeviceMetrics
 
 #-------------------------------------------------------------------------------
 genericServiceCall = (message) ->
@@ -53,6 +54,13 @@ Profiler_hasHeapProfiler = (message) ->
     
 #-------------------------------------------------------------------------------
 Page_reload = (message) ->
+    InspectorBackend.dispatch
+        id:     message.id
+        result:
+            result: false
+
+#-------------------------------------------------------------------------------
+Page_canOverrideDeviceMetrics = (message) ->
     InspectorBackend.dispatch
         id:     message.id
         result:

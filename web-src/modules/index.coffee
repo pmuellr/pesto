@@ -2,6 +2,7 @@
 
 PestoMessager         = require './PestoMessager'
 InspectorFrontendHost = require './InspectorFrontendHost'
+utils                 = require './utils'
 
 window.Pesto = {}
 
@@ -21,10 +22,10 @@ main = ->
     window.InspectorFrontendHost = new InspectorFrontendHost
     
     getTargets (message) ->
-        WebInspector.log "getTargets: #{JSON.stringify(message,null,4)}"
+        utils.logDebug "getTargets: #{JSON.stringify(message,null,4)}"
         
     getServerInfo (message) ->
-        WebInspector.log "pesto server settings: #{JSON.stringify(message.body)}"
+        utils.logDebug "pesto server settings: #{JSON.stringify(message.body)}"
         
 
 #-------------------------------------------------------------------------------
@@ -43,7 +44,7 @@ getServerInfo = (callback) ->
 
 #-------------------------------------------------------------------------------
 _onEvent = (message) ->
-    WebInspector.log "event received: #{JSON.stringify(message,null,4)}"
+    utils.logDebug "event received: #{JSON.stringify(message,null,4)}"
 
 #-------------------------------------------------------------------------------
 jQuery(document).ready ->

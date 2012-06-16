@@ -1,11 +1,18 @@
 # Licensed under the Tumbolia Public License. See footer for details.
 
 serviceHacks = require './serviceHacks'
+utils        = require './utils'
 
 #-------------------------------------------------------------------------------
+log = (message) ->
+    if WebInspector.logDebug 
+        WebInspector.logDebug(message) 
+    else
+        console.debug(message)
+    return
+    
+#-------------------------------------------------------------------------------
 if false
-    log = (message) -> WebInspector.log(message)
-else
     log = (message) ->
 
 #-------------------------------------------------------------------------------
@@ -70,8 +77,6 @@ module.exports = class InspectorFrontendHost
         
         setTimeout (=>@_toggleConsole()),            0
         setTimeout (=>@_setScriptsPanelAsCurrent()), 0
-        #setTimeout (=>@_createTargetsSidebarPane()), 0
-        #setTimeout (=>@_createTargetsPanel()),       0
 
     #---------------------------------------------------------------------------
     _createTargetsSidebarPane: ->    
