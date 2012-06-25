@@ -41,6 +41,7 @@ main = ->
     
     skipDomains = "Memory Page Network Database IndexedDB DOMStorage ApplicationCache FileSystem DOM CSS DOMDebugger Worker"
     skipDomains = skipDomains.split(" ")
+    skipDomains = []
     
     for domain in domains
         continue if domain.domain in skipDomains

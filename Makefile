@@ -18,7 +18,6 @@ build: web tmp
 
 	# copy in pesto files
 	@node_modules/.bin/coffee tools/ij2html.coffee  web/Inspector.json > web/Inspector-API.html
-	@node_modules/.bin/coffee tools/ij2stubs.coffee web/Inspector.json > web/Inspector-stubs.coffee.txt
 	@mkdir web/pesto
 	@cp -R web-src/* web/pesto
 	

@@ -11,55 +11,68 @@ module.exports = class PestoMessager extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@socket) ->
-        @callbacks = {}
-        @seq       = 0
-        
-        @socket.on 'pesto-event', (message) =>
-            @emit 'event', message
-            @emit "event-#{message.event}", message
-
-        @socket.on 'pesto-response', (message) =>
-            @_onResponse(message)
+        @socket.on 'pesto-message', (message) => @_receivedMessage(message)
             
-        @socket.on 'connect',    => @connected()
-        @socket.on 'disconnect', => @disconnected()
+        @socket.on 'connect',        => @_io_connect()
+        @socket.on 'connecting',     => @_io_connecting()
+        @socket.on 'connect_failed', => @_io_connect_failed()
+        @socket.on 'error',          => @_io_error()
+        @socket.on 'reconnect',      => @_io_reconnect()
+        @socket.on 'reconnecting',   => @_io_reconnecting()
+        @socket.on 'disconnect',     => @_io_disconnect()
 
     #---------------------------------------------------------------------------
-    connected: ->
-        utils.log "connected to Pesto server socket"
-    
+    sendMessage: (message) ->
+        @socket.emit 'pesto-message', message
+
     #---------------------------------------------------------------------------
-    disconnected: ->
-        utils.log "disconnected from Pesto server socket"
+    _receivedMessage: (message) ->
+        ready = window?.InspectorBackend?.dispatch
+        if !ready
+            utils.logError "message received before InspectorBackend ready: #{message}"
+            return
         
+        InspectorBackend.dispatch(message)
+
+    #---------------------------------------------------------------------------
+    _reconnectRequired: ->
         message = "The server appears to have stopped.  You will need to reload this page."
         utils.logError message
-    
-    #---------------------------------------------------------------------------
-    sendMessage: (message, callback) ->
-        seq     = @seq++
-        message = _.clone(message)
-        
-        message.seq  = seq
-        message.type = 'request'
-        
-        if callback
-            @callbacks[seq] = callback
-            
-        @socket.emit 'pesto-request', message
 
     #---------------------------------------------------------------------------
-    _onResponse: (message) ->
-        seq = message.request_seq
-        callback = @callbacks[seq]
-        if !callback
-            WebInspector.log "no callback for response: #{JSON.stringify(message,null,4)}"
-            return
-            
-        delete @callbacks[seq]
+    _io_connect: ->
+        utils.logDebug "connected to pesto server socket"
+    
+    #---------------------------------------------------------------------------
+    _io_disconnect: ->
+        utils.logDebug "disconnected from pesto server socket"
+
+        @_reconnectRequired()        
+    
+    #---------------------------------------------------------------------------
+    _io_connecting: ->
+        utils.logDebug "connected to pesto server socket"
+    
+    #---------------------------------------------------------------------------
+    _io_connect_failed: ->
+        utils.logDebug "connecting to pesto server failed"
+
+        @_reconnectRequired()        
+    
+    #---------------------------------------------------------------------------
+    _io_error: ->
+        utils.logError "an error occurred communicating with the pesto server"
         
-        callback.call(null, message)
- 
+        @_reconnectRequired()        
+    
+    #---------------------------------------------------------------------------
+    _io_reconnect: ->
+        utils.logDebug "reconnected to pesto server"
+    
+    #---------------------------------------------------------------------------
+    _io_reconnecting: ->
+        utils.logDebug "reconnecting to pesto server"
+    
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller
 # 

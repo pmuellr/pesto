@@ -7,8 +7,11 @@ path = require 'path'
 
 _ = require 'underscore'
 
+oDir = "#{__dirname}/../lib/domains"
+
 #-------------------------------------------------------------------------------
 main = ->
+    
     iFile = process.argv[2]
     if !iFile
         console.log "expecting name of Inspector.json file"
@@ -24,12 +27,15 @@ main = ->
 #-------------------------------------------------------------------------------
 processDomain = (domain) ->
 
-    console.log "#-------------------------------------------------------------------------------"
-    console.log "class #{domain.domain}"
-    console.log ""
-    console.log "    #---------------------------------------------------------------------------"
-    console.log "    constructor: ->"
-    console.log ""
+    lines = []
+
+    lines.push "# Licensed under the Tumbolia Public License. See footer for details."
+    lines.push ""
+    lines.push "#-------------------------------------------------------------------------------"
+    lines.push "# domain: #{domain.domain}"
+    lines.push "#-------------------------------------------------------------------------------"
+    lines.push "module.exports ="
+    lines.push ""
     
     if domain.commands?.length
         for command in domain.commands
@@ -38,27 +44,39 @@ processDomain = (domain) ->
             command.parameters.unshift name: "request"
             sig = getSignature(command)
                 
-            console.log "    #---------------------------------------------------------------------------"
-            if command.description
-                console.log "    # #{command.description}"
-                console.log "    #---------------------------------------------------------------------------"
-            console.log "    #{sig} ->"
-            console.log "       request.response null"
-            console.log ""
-                
-    if domain.events?.length
-        for event in domain.events
-            event.name = "sendEvent_#{event.name}"
-            sig = getSignature(event)
-        
-            console.log "    #---------------------------------------------------------------------------"
-            if event.description
-                console.log "    # #{event.description}"
-                console.log "    #---------------------------------------------------------------------------"
-            console.log "    #{sig} ->"
-            console.log ""
-            
-    console.log ""
+            lines.push "    #---------------------------------------------------------------------------"
+            lines.push "    #{command.name}: (client, message) ->"
+            lines.push ""
+            lines.push "        result = null"
+            lines.push ""
+            lines.push "        client.sendResponse"
+            lines.push "            _omsg:  '#{domain.domain}.#{command.name}'"
+            lines.push "            id:     message.id"
+            lines.push "            result: result"
+            lines.push ""
+            lines.push "        return"
+            lines.push ""
+
+    lines.push "#-------------------------------------------------------------------------------"
+    lines.push "# Copyright (c) 2012 Patrick Mueller"
+    lines.push "#"
+    lines.push "# Tumbolia Public License"
+    lines.push "#"
+    lines.push "# Copying and distribution of this file, with or without modification, are"
+    lines.push "# permitted in any medium without royalty provided the copyright notice and this"
+    lines.push "# notice are preserved."
+    lines.push "#"
+    lines.push "# TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION"
+    lines.push "#"
+    lines.push "#   0. opan saurce LOL"
+    lines.push "#-------------------------------------------------------------------------------"
+    lines.push ""
+    
+    oFile = "#{oDir}/#{domain.domain}.coffee"
+    
+    fs.writeFileSync oFile, lines.join("\n"), "utf8"
+    
+    console.log "generated: #{oFile}"
     
 #-------------------------------------------------------------------------------
 getSignature = (thang) ->

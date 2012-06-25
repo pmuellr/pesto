@@ -75,8 +75,8 @@ module.exports = class InspectorFrontendHost
         log("InspectorFrontendHost.loaded()")
         Preferences.localizeUI = false
         
-        setTimeout (=>@_toggleConsole()),            0
-        setTimeout (=>@_setScriptsPanelAsCurrent()), 0
+        setTimeout (=>@_toggleConsole()),            250
+        setTimeout (=>@_setScriptsPanelAsCurrent()), 250
 
     #---------------------------------------------------------------------------
     _createTargetsSidebarPane: ->    
@@ -96,11 +96,21 @@ module.exports = class InspectorFrontendHost
         
     #---------------------------------------------------------------------------
     _toggleConsole: ->
-        WebInspector._toggleConsoleButtonClicked()
+        if WebInspector?._toggleConsoleButton
+            WebInspector._toggleConsoleButtonClicked()
+        else
+            console.log "Web Inspector has not finished initializing"
+            
+        return
 
     #---------------------------------------------------------------------------
     _setScriptsPanelAsCurrent: ->
-        WebInspector.inspectorView.setCurrentPanel WebInspector.panels["scripts"]
+        if WebInspector?.panels
+            WebInspector.inspectorView.setCurrentPanel WebInspector.panels["scripts"]
+        else
+            console.log "Web Inspector has not finished initializing"
+
+        return
 
     #---------------------------------------------------------------------------
     localizedStringsURL: ->
@@ -156,13 +166,11 @@ module.exports = class InspectorFrontendHost
 
     #---------------------------------------------------------------------------
     sendMessageToBackend: (message) ->
-        log("InspectorFrontendHost.sendMessageToBackend()")
+        log("InspectorFrontendHost.sendMessageToBackend(): #{message}")
         
-        messageObject = JSON.parse(message)
-        log("message: " + JSON.stringify(messageObject, null, 4))
+        Pesto.messager.sendMessage message
         
-        if serviceHacks[messageObject.method]
-            serviceHacks[messageObject.method](messageObject)
+        return
 
     #---------------------------------------------------------------------------
     recordActionTaken: (actionCode) ->

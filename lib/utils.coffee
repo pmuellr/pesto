@@ -88,7 +88,7 @@ class Utils
     error: (message) -> 
         date = new Date()
         time = date.toISOString()    
-        console.error "#{utils.PROGRAM} #{time}: error: #{message}"
+        console.log "#{utils.PROGRAM} #{time}: error: #{message}"
 
     #---------------------------------------------------------------------------
     fatalError: (message) -> 
