@@ -5,7 +5,7 @@
 SOCKET_IO_DIR = node_modules/socket.io/node_modules/socket.io-client/dist
 
 #-------------------------------------------------------------------------------
-build: web tmp
+build: lib web tmp
 	@echo building lib directory
 	
 	@-chmod -R +w lib
@@ -82,6 +82,10 @@ build: web tmp
 	
 	@touch tmp/build-done.txt
 
+#-------------------------------------------------------------------------------
+lib:
+	mkdir lib
+    
 #-------------------------------------------------------------------------------
 web:
 	mkdir web
