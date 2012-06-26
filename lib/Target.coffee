@@ -4,26 +4,25 @@ net    = require 'net'
 events = require 'events'
 
 utils             = require './utils'
-MessageReader     = require './MessageReader'
+V8MessageReader   = require './V8MessageReader'
 connectionManager = require './connectionManager'
 
 #-------------------------------------------------------------------------------
 # emits:
 #   'connect'
+#       {}
+#   'event'
+#       {v8Message}
 #   'end'
+#       {}
 #-------------------------------------------------------------------------------
 module.exports = class Target extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (@port) ->
-        # utils.logTrace "Target.constructor", @port
         @properties = {}
         
         @socket = net.createConnection @port, "localhost"
-        @seq = 1
-        @description = null
-        @responseCBs = {}
-        @headers = {}
         
         @socket.setEncoding('utf8')
         
@@ -32,15 +31,45 @@ module.exports = class Target extends events.EventEmitter
         @socket.on 'error',   (error)   => @_onError(error)
         @socket.on 'end',               => @_onEnd()
         
-        messageReader = new MessageReader(@socket)
-        messageReader.on 'message', (message) => @_onMessage(message)
+    #---------------------------------------------------------------------------
+    close: ->
+        @socket.end()
+        @socket.destroy()
+
+    #---------------------------------------------------------------------------
+    sendRequest: (message, callback) ->
+        message.seq  = @seq++
+        
+        messageString = JSON.stringify(message)
+        
+        crlf          = '\r\n'
+        messageString = "Content-Length: #{messageString.length}#{crlf}#{crlf}#{messageString}"
+
+        utils.logVerbose "Target.sendRequest: #{utils.Jl(message)}"
+        
+        @socket.write messageString, 'utf8'
+    
+        if callback
+            @responseCBs[message.seq] = callback
+            
+        message.seq
         
     #---------------------------------------------------------------------------
     _onConnect: () ->
+        @seq         = 1
+        @description = null
+        @responseCBs = {}
+        @headers     = {}
+        
         @connected = true
         @emit 'connect'
+
+        messageReader = new V8MessageReader(@socket)
+        messageReader.on 'message', (message) => @_onMessage(message)
         
-        setTimeout (=> @introspect()), 1000
+        connectionManager.attachTarget @
+        
+        # setTimeout (=> @introspect()), 1000
     
     #---------------------------------------------------------------------------
     _onMessage: (message) ->
@@ -52,12 +81,16 @@ module.exports = class Target extends events.EventEmitter
                     @properties[key] = val
             return
         
-        message = JSON.parse(message.body)
+        try 
+            message = JSON.parse(message.body)
+        catch e
+            utils.logVerbose "error parsing V8 message #{message.body}"
+            return
 
-        utils.logTrace "Target._onMessage", utils.Jl(message)
+        utils.logVerbose "Target._onMessage #{utils.Jl(message)}"
         
         if message.type == 'event'
-            connectionManager.handleTargetEvent @, message
+            @emit "event", message
             return
 
         if message.type == 'response'
@@ -65,7 +98,7 @@ module.exports = class Target extends events.EventEmitter
                 @responseCBs[message.request_seq].call null, message
                 delete @responseCBs[message.request_seq]
             else
-                connectionManager.handleTargetResponse @, message
+                utils.logVerbose "callback not registered for V8 message #{message.request_seq}"
                 
             return
 
@@ -74,34 +107,17 @@ module.exports = class Target extends events.EventEmitter
     #---------------------------------------------------------------------------
     _onError: (error) ->
         if error.code != 'ECONNREFUSED'
-            utils.logTrace "Target._onError", error
+            utils.logVerose "Target._onError #{error}"
             
         @socket.end()
         @socket.destroy()
     
     #---------------------------------------------------------------------------
     _onEnd: ->
+        connectionManager.detachTarget @
+
         @emit 'end'
 
-    #---------------------------------------------------------------------------
-    sendRequest: (message, callback) ->
-        message.seq  = @seq++
-        
-        messageString = JSON.stringify(message)
-        
-        crlf          = '\r\n'
-        messageString = "Content-Length: #{messageString.length}#{crlf}#{crlf}#{messageString}"
-
-        #utils.logTrace "Target.sendRequest", "sending message: #{messageString}"
-        utils.logTrace "Target.sendRequest", utils.Jl(message)
-        
-        @socket.write messageString, 'utf8'
-    
-        if callback
-            @responseCBs[message.seq] = callback
-            
-        message.seq
-        
     #---------------------------------------------------------------------------
     introspect: ->
         message = 

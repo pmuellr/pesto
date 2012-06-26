@@ -16,55 +16,51 @@ connectionManager = require './connectionManager'
 module.exports = class TargetScanner
 
     #---------------------------------------------------------------------------
-    constructor: (@config) ->
-        @openPorts = {}
+    constructor: (config) ->
+        @port      = config.port
+        @scanning  = false
+        @connected = false
+        @target    = null
+
+        if @port <= 0
+            utils.fatalError 'starting target scan port < 0'
+
+        if @port >= 256*256
+            utils.fatalError "stopping target scan port > #{256*256}"
 
     #---------------------------------------------------------------------------
     startScanning: ()  ->
-        if @config.portStart > @config.portStop
-            utils.fatalError 'starting target scan port > stopping target scan port'
-            
-        if @portStart <= 0
-            utils.fatalError 'starting target scan port < 0'
-
-        if @portStop >= 256*256
-            utils.fatalError "stopping target scan port > #{256*256}"
-
-        @stopped  = false
-        @interval = setInterval (=> @checkPorts()), 1000
+        return if @scanning
+        
+        @scanning  = false
+        @interval = setInterval (=> @checkPort()), 1000
             
     #---------------------------------------------------------------------------
     stopScanning: ->
-        @stopped = true
+        return if !@scanning
+        
+        @scanning = true
         clearInterval(@interval)
+        @interval = null
         
     #---------------------------------------------------------------------------
-    checkPorts: ->
-        # utils.logTrace "TargetScanner.checkPorts", "checking node ports #{@portStart}..#{@portStop}"
-        for port in [@config.portStart .. @config.portStop]
-            @checkPort port            
+    checkPort: ->
+        return if @connected
+        
+#        utils.logVerbose "TargetScanner checking port #{@port}"
 
-    #---------------------------------------------------------------------------
-    checkPort: (port) ->
-        return if @openPorts[port]
+        @target.close() if @target
         
-        # utils.logTrace "TargetScanner.checkPort", "checking node port #{port}"
+        @target = new Target(@port)
         
-        target = new Target(port)
-        
-        target.on 'connect', => 
-            utils.logVerbose "TargetScanner.checkPort(): connected on port #{port}"
-            @openPorts[port] = target
+        @target.on 'connect', => 
+            utils.logVerbose "Target connected on port #{@port}"
+            @connected = true
             
-            target.on 'end', => @_onTargetEnd(target, port)
-
+            @target.on 'end', => 
+                utils.logVerbose "Target disconnected on port #{@port}"
+                @connected = false
             
-    #---------------------------------------------------------------------------
-    _onTargetEnd: (target, port) ->
-        delete @openPorts[port]
-
-        connectionManager.targetDetached target
-
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller
 # 

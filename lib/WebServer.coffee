@@ -6,8 +6,9 @@ path = require 'path'
 connect   = require 'connect'
 socket_io = require 'socket.io'
 
-utils             = require './utils'
-Client            = require './Client'
+utils   = require './utils'
+Client  = require './Client'
+
 connectionManager = require './connectionManager'
 
 #-------------------------------------------------------------------------------
@@ -31,17 +32,35 @@ module.exports = class WebServer
 
         io = socket_io.listen(server)
         io.set('log level', 1)
-        io.sockets.on 'connection', (socket) => @_onConnect(socket)
+        io.sockets.on 'connection', handleClientConnected
         
         utils.log "starting server on http://localhost:#{@port}"
+        
+        connectionManager.on "clientAttached", handleClientAttached
+        connectionManager.on "targetAttached", handleTargetAttached
     
-    #---------------------------------------------------------------------------
-    _onConnect: (socket) ->
-        client = new Client(socket)
+#-------------------------------------------------------------------------------
+handleClientConnected = (socket) ->
+
+    # Client instances hooks itself up to connectionManager
+    client = new Client(socket)
+
+#-------------------------------------------------------------------------------
+handleClientAttached = (client) ->
+    targets = connectionManager.getAttachedTargets()
+    
+    for target in targets
+        connectionManager.connect client, target
+        return # only connect 1st target (should only be one anyway)
+
+#-------------------------------------------------------------------------------
+handleTargetAttached = (target) ->
+
+    clients = connectionManager.getAttachedClients()
+    
+    for client in clients
+        connectionManager.connect client, target
         
-        connectionManager.clientAttached client
-        
-        socket.on 'disconnect', -> connectionManager.clientDetached client
 
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller

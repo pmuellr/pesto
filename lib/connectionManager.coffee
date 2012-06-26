@@ -1,15 +1,26 @@
 # Licensed under the Tumbolia Public License. See footer for details.
 
 events = require 'events'
+_      = require 'underscore'
 
-_ = require 'underscore'
-
-utils         = null
-PestoEvents   = null
-PestoRequests = null
+utils = require "./utils"
 
 #-------------------------------------------------------------------------------
-class ConnectionManager
+# emits:
+#     targetAttached
+#          { target: aTarget }
+#     clientAttached
+#          { client: aClient }
+#     connected
+#          { client: aClient, target: aTarget }
+#     disconnected
+#          { client: aClient, target: aTarget }
+#     targetDetached
+#          { target: aTarget }
+#     clientDetached
+#          { client: aClient }
+#-------------------------------------------------------------------------------
+class ConnectionManager extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: () ->
@@ -17,63 +28,54 @@ class ConnectionManager
         @connections       = []
         @clientAttachments = []
         @targetAttachments = []
-        @seqMap            = {}
-        @agentMap          = {}
 
     #---------------------------------------------------------------------------
-    handleClientRequest: (client, message) ->
-        # utils.logTrace "ConnectionManager.handleClientRequest", "message: #{utils.Jl(message)}"
+    attachClient: (client) ->
+        utils.logVerbose "clientAttached"
+
+        client.id = @nextId++
+        @clientAttachments.push client
+        @emit "clientAttached", client
         
-        if message.command.match /^pesto-/
-            @handlePestoClientRequest client, message
-            return
-            
+    #---------------------------------------------------------------------------
+    detachClient: (client) ->
+        utils.logVerbose "clientDetached"
+        
+        client.dead = true
+
+        @clientAttachments = _.without @clientAttachments, client
+
         target = @getConnectedTarget client
-        return if !target
+        if target
+            @disconnect(client, target)
+
+        @emit "clientDetached", client
         
-        oldSeq = message.seq
-        newSeq = target.sendRequest message
+    #---------------------------------------------------------------------------
+    attachTarget: (target) ->
+        utils.logVerbose "targetAttached"
         
-        @seqMap[newSeq] = [client, oldSeq]
+        target.id = @nextId++
+        @targetAttachments.push target
+        @emit "targetAttached", target
 
     #---------------------------------------------------------------------------
-    handlePestoClientRequest: (client, message) ->
-
-        if message.command == 'pesto-getInfo'
-            PestoRequests.pesto_getInfo client, message
-            return
+    detachTarget: (target) ->
+        utils.logVerbose "targetDetached"
         
-        if message.command == 'pesto-getTargets'
-            PestoRequests.pesto_getTargets client, message
-            return
-
-        if message.command == 'pesto-connectTarget'
-            PestoRequests.pesto_connectTarget client, message
-            return
-            
-        utils.logError "unknown pesto command #{message.command}"
-
-    #---------------------------------------------------------------------------
-    handleTargetResponse: (target, message) ->
-        [client, oldSeq] = @seqMap[message.request_seq]
-        return if !client
+        target.dead = true
+        @targetAttachments = _.without @targetAttachments, target
         
-        delete @seqMap[message.request_seq]
-        
-        message.request_seq = oldSeq
-        client.sendResponse message
-    
-    #---------------------------------------------------------------------------
-    handleTargetEvent: (target, message) ->
-        # utils.logTrace "ConnectionManager.handleTargetEvent", "message: #{utils.Jl(message)}"
-    
-        clients = @getConnectedClients(target)
-        
+        clients = @getConnectedClients target
         for client in clients
-            client.sendEvent message
-    
+            @disconnect(client, target)
+        
+        @emit "targetDetached", target
+
     #---------------------------------------------------------------------------
     connect: (client, target) ->
+        utils.logVerbose "client/target connected"
+        
         for connection in @connections
             if (connection[0] == client) && (connection[1] == target)
                 return
@@ -83,63 +85,27 @@ class ConnectionManager
             @disconnect client, oldTarget
             
         @connections.push [client, target]
-        
-        PestoEvents.sendEventConnected client, target
-        
+        @emit "connected", 
+            client: client
+            target: target
+            
     #---------------------------------------------------------------------------
     disconnect: (client, target) ->
-    
+        utils.logVerbose "client/target disconnected"
+
         index = 0
         for connection in @connections
             if (connection[0] == client) && (connection[1] == target)
+            
                 @connections.splice(index,1)
-                
-                PestoEvents.sendEventDisconnected client, target
+                @emit "disconnected", 
+                    client: client
+                    target: target
+                    
                 return
                 
             index++
                 
-    #---------------------------------------------------------------------------
-    clientAttached: (client) ->
-        @clientAttachments.push(client)
-        
-        client.id = @nextId++
-        @agentMap[client.id] = client
-            
-
-    #---------------------------------------------------------------------------
-    targetAttached: (target) ->
-        @targetAttachments.push(target)
-
-        target.id = @nextId++
-        @agentMap[target.id] = target
-
-        for client in @getAttachedClients()
-            PestoEvents.sendEventTargetAttached client, target
-        
-    #---------------------------------------------------------------------------
-    clientDetached: (client) ->
-        target = @getConnectedTarget(client)
-        return if !target
-        
-        @disconnect(client, target)
-
-        @clientAttachments = _.without(@clientAttachments, client)
-        delete @agentMap[client.id]
-
-    #---------------------------------------------------------------------------
-    targetDetached: (target) ->
-        clients = @getConnectedClients(target)
-        
-        for client in clients
-            @disconnect(client, target)
-
-        @targetAttachments = _.without(@targetAttachments, target)
-        delete @agentMap[target.id]
-
-        for client in @getAttachedClients()
-            PestoEvents.sendEventTargetDetached client, target
-
     #---------------------------------------------------------------------------
     getAttachedClients: () ->
         @clientAttachments.slice()
@@ -151,6 +117,7 @@ class ConnectionManager
     #---------------------------------------------------------------------------
     getConnectedClients: (target) ->
         result = []
+        
         for connection in @connections
             if connection[1] == target
                 result.push connection[0]
@@ -166,24 +133,13 @@ class ConnectionManager
                 
         null
 
-    #---------------------------------------------------------------------------
-    getAgentById: (id) ->
-        @agentMap[id]
-
-    #---------------------------------------------------------------------------
-    toString: ->
-        "#{@constructor.name}{}"
-
-
 #-------------------------------------------------------------------------------
 module.exports = new ConnectionManager
 
 #-------------------------------------------------------------------------------
 # moved to the bottom to avoid recursive requires
 #-------------------------------------------------------------------------------
-utils         = require './utils'
-PestoEvents   = require './PestoEvents'
-PestoRequests = require './PestoRequests'
+utils = require './utils'
 
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller

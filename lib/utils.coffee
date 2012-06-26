@@ -65,15 +65,6 @@ class Utils
         string
 
     #---------------------------------------------------------------------------
-    logTrace: (func, message) -> 
-        if typeof func == "function"
-            frame = func.displayName || func.name || "<anonymous function>"
-        else
-            frame = "#{func}"
-            
-        @logVerbose "#{frame}: #{message}"
-
-    #---------------------------------------------------------------------------
     logVerbose: (message) -> 
         return if !utils.config.verbose
         utils.log message

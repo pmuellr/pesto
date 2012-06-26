@@ -1,5 +1,7 @@
 # Licensed under the Tumbolia Public License. See footer for details.
 
+require './prettyStackTrace'
+
 path = require 'path'
 
 _ = require 'underscore'
@@ -25,8 +27,8 @@ class CLI
         @dumpInfoAtStart(utils.config)
         
         targetScannerConfig =
-            portStart: utils.config.v8port
-            portStop:  utils.config.v8port
+            port: utils.config.v8port
+            
         targetScanner = new TargetScanner(targetScannerConfig)
         targetScanner.startScanning()
         

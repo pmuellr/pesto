@@ -1,5 +1,7 @@
 # Licensed under the Tumbolia Public License. See footer for details.
 
+_ = require 'underscore'
+
 utils             = require './utils'
 connectionManager = require './connectionManager'
 
@@ -10,18 +12,19 @@ module.exports = class Client
 
     #---------------------------------------------------------------------------
     constructor: (@socket) ->
+        connectionManager.attachClient @
+
         @socket.on 'pesto-message', (message) => @_handleCommand message
+        @socket.on 'disconnect', => connectionManager.detachClient @
 
     #---------------------------------------------------------------------------
     sendEvent: (domain, method, params) ->
-#        utils.logTrace "Client.sendEvent", utils.Jl(message)
         @socket.emit 'pesto-message', 
             method: "#{domain}.#{method}"
             params: params
         
     #---------------------------------------------------------------------------
     sendResponse: (message) ->
-#        utils.logTrace "Client.sendResponse", utils.Jl(message)
         @socket.emit 'pesto-message', message
     
     #---------------------------------------------------------------------------
@@ -32,7 +35,7 @@ module.exports = class Client
             utils.error "unable to parse JSON message: #{message}"
             return
         
-        utils.logTrace "Client._handleCommand", utils.Js(message)
+        utils.logVerbose "Client._handleCommand #{utils.Js(message)}"
         
         method = message.method
         if typeof method != "string"

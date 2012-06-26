@@ -9,7 +9,7 @@ utils  = require './utils'
 # emits: 
 #    'message', {headers, body}
 #-------------------------------------------------------------------------------
-module.exports = class MessageReader extends events.EventEmitter
+module.exports = class V8MessageReader extends events.EventEmitter
 
     #---------------------------------------------------------------------------
     constructor: (socket) ->
@@ -33,9 +33,7 @@ module.exports = class MessageReader extends events.EventEmitter
     _onData: (data) ->
         @buffer += data
         
-        # utils.logTrace "MessageReader._onData", "starting with '#{data}'"
         while true
-            # utils.logTrace "MessageReader._onData", "top of loop"
 
             # reading the body
             if !@inHeaders
