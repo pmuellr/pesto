@@ -9,7 +9,7 @@ var child_process = require("child_process")
 //------------------------------------------------------------------------------
 var sourceFiles = [
     "grunt.js",
-    "lib/**/*.coffee", 
+    "lib-src/**/*.coffee", 
     "Makefile",
     "tools/**/*.coffee",
     "web-src/**/*.coffee",
@@ -28,7 +28,7 @@ var gruntConfig = {
 }
 
 //------------------------------------------------------------------------------
-// run "jake"
+// run "make"
 //------------------------------------------------------------------------------
 function makeTask(task, grunt) {
     var done = task.async()

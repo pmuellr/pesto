@@ -1,6 +1,7 @@
 # Licensed under the Tumbolia Public License. See footer for details.
 
 web
+lib
 tmp
 node_modules
 vendor

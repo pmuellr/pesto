@@ -6,6 +6,14 @@ SOCKET_IO_DIR = node_modules/socket.io/node_modules/socket.io-client/dist
 
 #-------------------------------------------------------------------------------
 build: web tmp
+	@echo building lib directory
+	
+	@-chmod -R +w lib
+	@-rm -rf lib/*
+	@node_modules/.bin/coffee  -b -c -o lib         lib-src/*.coffee
+	@node_modules/.bin/coffee  -b -c -o lib/domains lib-src/domains/*.coffee
+	@-chmod -R -w lib
+	
 	@echo building web directory
 	
 	# erase the ./web directory
@@ -42,7 +50,7 @@ build: web tmp
     # pre-compile just to get syntax errors, browserify doesn't
 	@-rm -rf tmp/*
 	@node_modules/.bin/coffee -c -o tmp \
-	    web-src/modules/*.coffee web-src/modules/*.coffee
+	    web-src/modules/*.coffee
 
     # copy our pesto modules over for browserify
 	@-rm -rf tmp/*
