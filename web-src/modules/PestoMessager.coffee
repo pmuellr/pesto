@@ -51,7 +51,7 @@ module.exports = class PestoMessager extends events.EventEmitter
     
     #---------------------------------------------------------------------------
     _io_connecting: ->
-        utils.logDebug "connected to pesto server socket"
+        utils.logDebug "connecting to pesto server socket"
     
     #---------------------------------------------------------------------------
     _io_connect_failed: ->

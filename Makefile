@@ -102,13 +102,17 @@ test: build
 #WEBKIT_VERSION = 111354
 #WEBKIT_VERSION = 120350
 WEBKIT_VERSION = 120456
+VERSION_WEBKIT = 120456
+
+VERSION_JQUERY_UI = 1.8.23
+VERSION_JQUERY    = 1.8.2
 
 #-------------------------------------------------------------------------------
 vendor:
 	@npm install
 	@rm -rf vendor
 	@mkdir vendor
-	curl --output vendor/jquery.js        --progress-bar http://code.jquery.com/jquery-1.7.1.min.js
+	curl --output vendor/jquery.js        --progress-bar http://code.jquery.com/jquery-$(VERSION_JQUERY).min.js
 #	curl --output vendor/coffee-script.js --progress-bar https://raw.github.com/jashkenas/coffee-script/1.2.0/extras/coffee-script.js
 #	curl --output vendor/mustache.js      --progress-bar https://raw.github.com/janl/mustache.js/0.4.2/mustache.js
 #	curl --output vendor/bootstrap.zip    --progress-bar http://twitter.github.com/bootstrap/assets/bootstrap.zip
@@ -122,9 +126,23 @@ vendor:
 #	curl --output vendor/CodeMirror2/codemirror.js  --progress-bar https://raw.github.com/marijnh/CodeMirror2/master/lib/codemirror.js
 #	curl --output vendor/CodeMirror2/javascript.js  --progress-bar https://raw.github.com/marijnh/CodeMirror2/master/mode/javascript/javascript.js
 	
-	svn --non-interactive --trust-server-cert export -r $(WEBKIT_VERSION) https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/inspector vendor/WebInspector
+	svn --non-interactive --trust-server-cert export -r $(VERSION_WEBKIT) https://svn.webkit.org/repository/webkit/trunk/Source/WebCore/inspector vendor/WebInspector
 	rm vendor/WebInspector/*.cpp
 	rm vendor/WebInspector/*.h
+	
+	@rm -rf tmp
+	@mkdir  tmp
+
+	@mkdir vendor/jquery-ui
+	@mkdir vendor/jquery-ui/themes
+	@mkdir vendor/jquery-ui/themes/images
+
+	@curl --progress --out tmp/jquery-ui.zip http://jqueryui.com/download/jquery-ui-$(VERSION_JQUERY_UI).custom.zip
+	@unzip -q tmp/jquery-ui.zip -d tmp
+	@cp tmp/development-bundle/ui/jquery-ui-$(VERSION_JQUERY_UI).custom.js                 vendor/jquery-ui/jquery-ui.js
+	@cp tmp/development-bundle/themes/base/images/*                                        vendor/jquery-ui/themes/images
+	@cp tmp/development-bundle/themes/smoothness/jquery-ui-$(VERSION_JQUERY_UI).custom.css vendor/jquery-ui/themes/smoothness.css
+	
 
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller

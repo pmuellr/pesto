@@ -14,21 +14,43 @@ module.exports = class Client
     constructor: (@socket) ->
         connectionManager.attachClient @
 
-        @socket.on 'pesto-message', (message) => @_handleCommand message
+        @socket.on 'pesto-message', (message) => @_handleWiCommand message
         @socket.on 'disconnect', => connectionManager.detachClient @
 
     #---------------------------------------------------------------------------
-    sendEvent: (domain, method, params) ->
+    toString: ->
+        "aClient"
+
+    #---------------------------------------------------------------------------
+    attached: ->
+    
+    #---------------------------------------------------------------------------
+    detached: ->
+    
+    #---------------------------------------------------------------------------
+    connected: (@target) ->
+        @sendWiEvent "Debugger", "globalObjectCleared"
+    
+    #---------------------------------------------------------------------------
+    disconnected: (target) ->
+        @target = null
+
+    #---------------------------------------------------------------------------
+    sendWiEvent: (domain, method, params) ->
         @socket.emit 'pesto-message', 
             method: "#{domain}.#{method}"
             params: params
-        
+
     #---------------------------------------------------------------------------
-    sendResponse: (message) ->
+    sendWiResponse: (message) ->
         @socket.emit 'pesto-message', message
     
     #---------------------------------------------------------------------------
-    _handleCommand: (message) ->
+    sendResponse: (message) ->
+        @sendWiResponse message
+        
+    #---------------------------------------------------------------------------
+    _handleWiCommand: (message) ->
         try 
             message = JSON.parse(message)
         catch e

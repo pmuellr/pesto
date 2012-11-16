@@ -19,7 +19,7 @@ module.exports = class TargetScanner
     constructor: (config) ->
         @port      = config.port
         @scanning  = false
-        @connected = false
+        @attached = false
         @target    = null
 
         if @port <= 0
@@ -32,20 +32,20 @@ module.exports = class TargetScanner
     startScanning: ()  ->
         return if @scanning
         
-        @scanning  = false
+        @scanning  = true
         @interval = setInterval (=> @checkPort()), 1000
             
     #---------------------------------------------------------------------------
     stopScanning: ->
         return if !@scanning
         
-        @scanning = true
+        @scanning = false
         clearInterval(@interval)
         @interval = null
         
     #---------------------------------------------------------------------------
     checkPort: ->
-        return if @connected
+        return if @attached
         
 #        utils.logVerbose "TargetScanner checking port #{@port}"
 
@@ -54,12 +54,14 @@ module.exports = class TargetScanner
         @target = new Target(@port)
         
         @target.on 'connect', => 
-            utils.logVerbose "Target connected on port #{@port}"
-            @connected = true
+            utils.logVerbose "Target attached on port #{@port}"
+            @attached = true
+            @stopScanning()
             
             @target.on 'end', => 
-                utils.logVerbose "Target disconnected on port #{@port}"
-                @connected = false
+                utils.logVerbose "Target detached on port #{@port}"
+                @attached = false
+                @startScanning()
             
 #-------------------------------------------------------------------------------
 # Copyright (c) 2012 Patrick Mueller

@@ -35,6 +35,8 @@ class ConnectionManager extends events.EventEmitter
 
         client.id = @nextId++
         @clientAttachments.push client
+
+        client.attached()
         @emit "clientAttached", client
         
     #---------------------------------------------------------------------------
@@ -49,6 +51,7 @@ class ConnectionManager extends events.EventEmitter
         if target
             @disconnect(client, target)
 
+        client.detached()
         @emit "clientDetached", client
         
     #---------------------------------------------------------------------------
@@ -57,6 +60,8 @@ class ConnectionManager extends events.EventEmitter
         
         target.id = @nextId++
         @targetAttachments.push target
+
+        target.attached()
         @emit "targetAttached", target
 
     #---------------------------------------------------------------------------
@@ -70,6 +75,7 @@ class ConnectionManager extends events.EventEmitter
         for client in clients
             @disconnect(client, target)
         
+        target.detached()
         @emit "targetDetached", target
 
     #---------------------------------------------------------------------------
@@ -85,6 +91,9 @@ class ConnectionManager extends events.EventEmitter
             @disconnect client, oldTarget
             
         @connections.push [client, target]
+
+        target.connected(client)
+        client.connected(target)
         @emit "connected", 
             client: client
             target: target
@@ -98,6 +107,9 @@ class ConnectionManager extends events.EventEmitter
             if (connection[0] == client) && (connection[1] == target)
             
                 @connections.splice(index,1)
+                
+                target.connected(client)
+                client.connected(target)
                 @emit "disconnected", 
                     client: client
                     target: target

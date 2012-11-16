@@ -33,6 +33,8 @@ module.exports =
     enable: (client, message) ->
 
         result = null
+        
+        client.debuggerEnabled()
 
         client.sendResponse
             _omsg:  'Debugger.enable'

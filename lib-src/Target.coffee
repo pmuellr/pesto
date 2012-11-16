@@ -11,8 +11,6 @@ connectionManager = require './connectionManager'
 # emits:
 #   'connect'
 #       {}
-#   'event'
-#       {v8Message}
 #   'end'
 #       {}
 #-------------------------------------------------------------------------------
@@ -26,18 +24,33 @@ module.exports = class Target extends events.EventEmitter
         
         @socket.setEncoding('utf8')
         
-        @connected = false
         @socket.on 'connect', (socket)  => @_onConnect(socket)
         @socket.on 'error',   (error)   => @_onError(error)
         @socket.on 'end',               => @_onEnd()
+
+    #---------------------------------------------------------------------------
+    toString: ->
+        "aTarget"
         
+    #---------------------------------------------------------------------------
+    attached: ->
+    
+    #---------------------------------------------------------------------------
+    detached: ->
+    
+    #---------------------------------------------------------------------------
+    connected: (client) ->
+    
+    #---------------------------------------------------------------------------
+    disconnected: (client) ->
+
     #---------------------------------------------------------------------------
     close: ->
         @socket.end()
         @socket.destroy()
 
     #---------------------------------------------------------------------------
-    sendRequest: (message, callback) ->
+    sendV8Request: (message, callback) ->
         message.seq  = @seq++
         
         messageString = JSON.stringify(message)
@@ -53,6 +66,10 @@ module.exports = class Target extends events.EventEmitter
             @responseCBs[message.seq] = callback
             
         message.seq
+
+    #---------------------------------------------------------------------------
+    handleV8Event: (message) ->
+        utils.logVerbose "V8 event received: #{utils.Jl(message)}"
         
     #---------------------------------------------------------------------------
     _onConnect: () ->
@@ -61,18 +78,17 @@ module.exports = class Target extends events.EventEmitter
         @responseCBs = {}
         @headers     = {}
         
-        @connected = true
         @emit 'connect'
 
         messageReader = new V8MessageReader(@socket)
-        messageReader.on 'message', (message) => @_onMessage(message)
+        messageReader.on 'message', (message) => @_onV8Message(message)
         
         connectionManager.attachTarget @
         
         # setTimeout (=> @introspect()), 1000
     
     #---------------------------------------------------------------------------
-    _onMessage: (message) ->
+    _onV8Message: (message) ->
 
         # first message from the target
         if message.body == ''
@@ -87,10 +103,8 @@ module.exports = class Target extends events.EventEmitter
             utils.logVerbose "error parsing V8 message #{message.body}"
             return
 
-        utils.logVerbose "Target._onMessage #{utils.Jl(message)}"
-        
         if message.type == 'event'
-            @emit "event", message
+            @handleV8Event message
             return
 
         if message.type == 'response'
