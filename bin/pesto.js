@@ -1,9 +1,18 @@
-# Licensed under the Apache License. See footer for details.
+#!/usr/bin/env node
 
-tmp
-node_modules
-vendor
+// Licensed under the Apache License. See footer for details.
 
+var path = require("path")
+var fs   = require("fs")
+
+var rootPath = path.dirname(fs.realpathSync(__filename))
+var coffee   = path.join(rootPath, "..", "node_modules", "coffee-script")
+var cli      = path.join(rootPath, "..", "lib", "server", "cli")
+
+require(coffee)
+require(cli).run()
+
+/*
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.
 # 
@@ -19,3 +28,4 @@ vendor
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #-------------------------------------------------------------------------------
+*/

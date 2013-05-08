@@ -1,8 +1,22 @@
 # Licensed under the Apache License. See footer for details.
 
-tmp
-node_modules
-vendor
+utils = require "../common/utils"
+
+#-------------------------------------------------------------------------------
+module.exports = class Client
+
+    #---------------------------------------------------------------------------
+    constructor: (@id) ->
+
+    #---------------------------------------------------------------------------
+    refresh: (body) ->
+        @ip       = body.ip
+        @hostname = body.hostname
+        @info     = body.info
+
+    #---------------------------------------------------------------------------
+    description: ->
+        return @ip
 
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.

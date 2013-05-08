@@ -1,8 +1,34 @@
 # Licensed under the Apache License. See footer for details.
 
-tmp
-node_modules
-vendor
+_ = require "underscore"
+
+$         = require "./jquery"
+utils     = require "../common/utils"
+Logger    = require "../common/Logger"
+templates = require "./templates"
+
+pesto = exports
+
+$ -> domReady()
+
+#-------------------------------------------------------------------------------
+domReady = ->
+
+    $templates = $ "#templates"
+    for own templateName, template of templates
+        $templates.append "<div class='#{templateName}'>#{template}</div>"
+
+    autoloadTemplateNames = [
+        "header_html" 
+        "trailer_html" 
+        "navigator_html" 
+        "content_html"
+    ]
+
+    for templateName in autoloadTemplateNames
+        $("##{templateName}").append $("#templates .#{templateName}")
+
+    templateNames = _.without (_.keys templates), autoloadTemplateNames
 
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.

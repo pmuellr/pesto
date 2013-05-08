@@ -1,9 +1,17 @@
-# Licensed under the Apache License. See footer for details.
+#!/usr/bin/env node --debug-brk
 
-tmp
-node_modules
-vendor
+// Licensed under the Apache License. See footer for details.
 
+interval = 5000
+
+function everySoOften() {
+    console.log("the current time is: " + new Date())
+    setTimeout(everySoOften, interval)
+}
+
+everySoOften()
+
+/*
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.
 # 
@@ -19,3 +27,4 @@ vendor
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #-------------------------------------------------------------------------------
+*/
