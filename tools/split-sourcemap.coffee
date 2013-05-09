@@ -5,10 +5,13 @@ path = require "path"
 
 PROGRAM = path.basename(__filename)
 
+#-------------------------------------------------------------------------------
+log = (message) ->
+    console.log "#{PROGRAM}: #{message}"
+
+#-------------------------------------------------------------------------------
 iFileName = process.argv[2]
 oFileName = "#{iFileName}.map"
-
-# console.log "#{PROGRAM} #{iFileName} -> #{oFileName}"
 
 iFile     = fs.readFileSync iFileName, "utf8"
 
@@ -48,8 +51,8 @@ iFile = iFile.replace /\/\/@ sourceMappingURL=data:application\/json;base64,(.*)
 fs.writeFileSync iFileName, iFile
 fs.writeFileSync oFileName, data
 
-# console.log "#{PROGRAM} rewrote, removing data url: #{iFileName}"
-# console.log "#{PROGRAM} generated new source map:   #{oFileName}"
+log "rewrote, removing data url: #{iFileName}"
+log "generated new source map:   #{oFileName}"
 
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.

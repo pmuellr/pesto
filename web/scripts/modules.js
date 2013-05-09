@@ -152,7 +152,6 @@ templates['content_html'] = "content!\n\ncontent!\n\ncontent!"
 templates['header_html'] = "header!"
 templates['navigator_html'] = "navigator!"
 templates['trailer_html'] = "trailer!"
-
 },{}],4:[function(require,module,exports){
 (function(process){function filter (xs, fn) {
     var res = [];
@@ -462,7 +461,7 @@ exports.relative = function(from, to) {
 
 }).call(this);
 
-},{"./jquery":1,"../common/utils":3,"../common/Logger":6,"./templates":5,"underscore":8}],8:[function(require,module,exports){
+},{"./jquery":1,"../common/Logger":6,"../common/utils":3,"./templates":5,"underscore":8}],8:[function(require,module,exports){
 (function(){//     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.

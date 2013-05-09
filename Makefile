@@ -7,14 +7,16 @@ VERSION_JQUERY    = 2.0.0
 VERSION_JQUERY_UI = 1.10.3
 VERSION_D3        = v3.1.5
 VERSION_RIVETS    = v0.5.0
+VERSION_CM        = 3.12
 
 SOCKET_IO_DIR = node_modules/socket.io/node_modules/socket.io-browser
 
-BROWSERIFY       = @node_modules/.bin/browserify
-COFFEE           = @node_modules/.bin/coffee
-COFFEEC          = $(COFFEE) --compile
-TEMPLATE_BUNDLER = $(COFFEE) tools/template-bundler.coffee
-SPLIT_SOURCEMAP  = $(COFFEE) tools/split-sourcemap.coffee
+BROWSERIFY         = @node_modules/.bin/browserify
+COFFEE             = @node_modules/.bin/coffee
+COFFEEC            = $(COFFEE) --compile
+TEMPLATE_BUNDLER   = $(COFFEE) tools/template-bundler.coffee
+SPLIT_SOURCEMAP    = $(COFFEE) tools/split-sourcemap.coffee
+CODEMIRROR_BUNDLER = $(COFFEE) tools/codemirror-bundler.coffee
 
 
 #-------------------------------------------------------------------------------
@@ -69,26 +71,27 @@ build:
 	@mkdir -p web/scripts
 	@mkdir -p web/vendor
 
-	@cp web-src/*.html   web
-	@cp web-src/css/*    web/css
-	@cp web-src/images/* web/images
+	@cp web-src/.gitignore   web
+	@cp web-src/*.html       web
+	@cp web-src/css/*        web/css
+	@cp web-src/images/*     web/images
 
-	@cp -R vendor/*      web/vendor
+	@cp -R vendor/*          web/vendor
 
 
 
 #   compile CoffeeScript
 	@mkdir -p tmp/pesto/common tmp/pesto/browser 
-	@echo "   compiling CoffeeScript"
+	@echo "compiling CoffeeScript"
 	@$(COFFEEC) --output tmp               lib/server/*.coffee
 	@$(COFFEEC) --output tmp/pesto/common  lib/common/*.coffee
 	@$(COFFEEC) --output tmp/pesto/browser lib/browser/*.coffee
 
 # 	create our templates module
-	@$(TEMPLATE_BUNDLER) web-src/templates > tmp/pesto/browser/templates.js
+	@$(TEMPLATE_BUNDLER) web-src/templates tmp/pesto/browser/templates.js
 	
 #   run browserify
-	@echo "   running browserify"
+	@echo "running browserify"
 	@$(BROWSERIFY) tmp/pesto/browser/pesto.js \
 	    --outfile web/scripts/modules.js \
 	    --debug --verbose
@@ -101,9 +104,6 @@ build:
 
 
 #-------------------------------------------------------------------------------
-vendor: vendor-dl
-
-#-------------------------------------------------------------------------------
 vendor-npm:
 	@-chmod -R +w node_modules/* 
 	@rm -rf       node_modules
@@ -111,22 +111,51 @@ vendor-npm:
 	@chmod -R -w  node_modules/* 
 
 #-------------------------------------------------------------------------------
-vendor-dl: vendor-dl-init vendor-dl-jquery vendor-dl-d3 vendor-dl-rivets vendor-dl-bootstrap
-	@chmod -R -w  vendor/* 
-
-#-------------------------------------------------------------------------------
-vendor-dl-init:
+vendor: 
 	@-chmod -R +w vendor/* 
 	@rm -rf       vendor
 	@mkdir        vendor
 
-#-------------------------------------------------------------------------------
-vendor-dl-jquery:
+	@echo "downloading jquery"
 	@curl --progress --out vendor/jquery.js http://code.jquery.com/jquery-$(VERSION_JQUERY).js
-	
+
+	@echo "downloading d3"
+	@curl --progress --out vendor/d3.js     https://raw.github.com/mbostock/d3/$(VERSION_D3)/d3.js
+
+	@echo "downloading rivets"
+	@curl --progress --out vendor/rivets.js https://raw.github.com/mikeric/rivets/$(VERSION_RIVETS)/dist/rivets.js
+
+	@echo "downloading bootstrap"
+	@mkdir -p               vendor/bootstrap
+	@rm   -rf               vendor/bootstrap/*
+	@curl --progress --out  vendor/bootstrap/bootstrap.zip http://twitter.github.io/bootstrap/assets/bootstrap.zip
+	@unzip -q               vendor/bootstrap/bootstrap.zip -d vendor/bootstrap
+	@mv                     vendor/bootstrap/bootstrap/*      vendor/bootstrap
+	@rm                     vendor/bootstrap/bootstrap.zip
+	@rm -rf                 vendor/bootstrap/bootstrap
+	@rm                     vendor/bootstrap/css/*.min.css
+	@rm                     vendor/bootstrap/js/*.min.js
+
+	@echo "downloading codemirror"
+	@curl --progress --out tmp/codemirror.zip http://codemirror.net/codemirror-$(VERSION_CM).zip
+	@rm -rf                tmp/codemirror-$(VERSION_CM)
+	@unzip -q              tmp/codemirror.zip -d tmp
+	@$(CODEMIRROR_BUNDLER) tmp/codemirror-$(VERSION_CM) vendor
+
+	@chmod -R -w  vendor/* 
+
+#-------------------------------------------------------------------------------
+vendor-dl-cm: 
+	@-chmod -R +w vendor/* 
+	@curl --progress --out tmp/codemirror.zip http://codemirror.net/codemirror-$(VERSION_CM).zip
+	@rm -rf                tmp/codemirror-$(VERSION_CM)
+	@unzip -q              tmp/codemirror.zip -d tmp
+	@$(CODEMIRROR_BUNDLER) tmp/codemirror-$(VERSION_CM) vendor
+	@chmod -R -w  vendor/* 
+
 #-------------------------------------------------------------------------------
 vendor-dl-jquery-ui:
-
+	@echo "downloading jquery ui"
 	@rm -rf tmp
 	@mkdir  tmp
 
@@ -137,26 +166,6 @@ vendor-dl-jquery-ui:
 	cp tmp/jquery-ui-$(VERSION_JQUERY_UI)/ui/jquery-ui.js           vendor/jquery-ui/jquery-ui.js
 	cp tmp/jquery-ui-$(VERSION_JQUERY_UI)/themes/base/jquery-ui.css vendor/jquery-ui/jquery-ui.css
 	cp tmp/jquery-ui-$(VERSION_JQUERY_UI)/themes/base/images/*      vendor/jquery-ui/images
-
-#-------------------------------------------------------------------------------
-vendor-dl-d3:
-	@curl --progress-bar -o vendor/d3.js     https://raw.github.com/mbostock/d3/$(VERSION_D3)/d3.js
-
-#-------------------------------------------------------------------------------
-vendor-dl-rivets:
-	@curl --progress-bar -o vendor/rivets.js https://raw.github.com/mikeric/rivets/$(VERSION_RIVETS)/dist/rivets.js
-
-#-------------------------------------------------------------------------------
-vendor-dl-bootstrap:
-	@mkdir -p               vendor/bootstrap
-	@rm   -rf               vendor/bootstrap/*
-	@curl --progress-bar -o vendor/bootstrap/bootstrap.zip http://twitter.github.io/bootstrap/assets/bootstrap.zip
-	@unzip -q               vendor/bootstrap/bootstrap.zip -d vendor/bootstrap
-	@mv                     vendor/bootstrap/bootstrap/*      vendor/bootstrap
-	@rm                     vendor/bootstrap/bootstrap.zip
-	@rm -rf                 vendor/bootstrap/bootstrap
-	@rm                     vendor/bootstrap/css/*.min.css
-	@rm                     vendor/bootstrap/js/*.min.js
 
 #-------------------------------------------------------------------------------
 icons:

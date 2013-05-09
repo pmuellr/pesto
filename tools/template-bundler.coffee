@@ -3,11 +3,20 @@
 fs   = require 'fs'
 path = require 'path'
 
-dir = process.argv[2]
+PROGRAM = path.basename(__filename)
+
+#-------------------------------------------------------------------------------
+log = (message) ->
+    console.log "#{PROGRAM}: #{message}"
+
+#-------------------------------------------------------------------------------
+dir   = process.argv[2]
+oFile = process.argv[3]
 files = fs.readdirSync(dir)
 
-console.log 'templates = module.exports'
-console.log ''
+content = []
+content.push "templates = module.exports"
+content.push ""
 
 for file in files
     contents = fs.readFileSync path.join(dir,file), 'utf8'
@@ -17,7 +26,10 @@ for file in files
 
     file = file.replace /\./g, "_"
     
-    console.log "templates['#{file}'] = #{contents}"
+    content.push "templates['#{file}'] = #{contents}"
+
+fs.writeFileSync oFile, content.join "\n"
+log "generated #{oFile}"
 
 #-------------------------------------------------------------------------------
 # Copyright 2013 I.B.M.
